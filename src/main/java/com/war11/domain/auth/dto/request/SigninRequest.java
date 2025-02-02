@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequest {
+public class SigninRequest {
 
     @NotBlank
     private String loginId;
     @NotBlank
-    private String passward;
+    private String password;
 }

@@ -1,6 +1,8 @@
 package com.war11.domain.auth.controller;
 
+import com.war11.domain.auth.dto.request.SigninRequest;
 import com.war11.domain.auth.dto.request.SignupRequest;
+import com.war11.domain.auth.dto.response.SigninResponse;
 import com.war11.domain.auth.dto.response.SignupResponse;
 import com.war11.domain.auth.service.AuthService;
 import jakarta.validation.Valid;
@@ -20,6 +22,11 @@ public class AuthController {
     @PostMapping("signup")
     public SignupResponse signup(@Valid @RequestBody SignupRequest request) {
         return authService.signup(request);
+    }
+
+    @PostMapping("/signin")
+    public SigninResponse signin(@Valid @RequestBody SigninRequest request) {
+        return authService.signin(request);
     }
 
 }
