@@ -10,7 +10,13 @@ public enum ErrorCode {
     // Common
     INVALID_INPUT_VALUE(400, "1", "1"),
     RESOURCE_NOT_FOUND(404,"",""),
-    INTERNAL_SERVER_ERROR(500,"","");
+    INTERNAL_SERVER_ERROR(500,"",""),
+
+    //Auth
+    NOT_FOUND_TOKEN(404,"404","토큰이 유효하지 않습니다."),
+    ID_ALREADY_EXISTS(409,"409","이미 해당 아이디가 존재합니다."),
+    NOT_FOUND_ID(404,"", "해당 아이디가 존재하지 않습니다.");
+
     //User
 
     //Product

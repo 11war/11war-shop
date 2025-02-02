@@ -3,6 +3,7 @@ package com.war11.domain.user.entity;
 import com.war11.domain.cart.entity.Cart;
 import com.war11.domain.order.entity.Order;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,4 +30,10 @@ public class User {
 
     @OneToOne(mappedBy = "user")
     private Cart cart;
+
+    public User(String loginId, String name, String password) {
+        this.loginId = loginId;
+        this.name = name;
+        this.password = password;
+    }
 }
