@@ -1,4 +1,4 @@
-package com._war._war;
+package com.war11;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

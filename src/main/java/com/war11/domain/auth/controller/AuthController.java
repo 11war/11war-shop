@@ -19,7 +19,7 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("signup")
+    @PostMapping("/signup")
     public SignupResponse signup(@Valid @RequestBody SignupRequest request) {
         return authService.signup(request);
     }

@@ -41,6 +41,7 @@ public class AuthService {
         return new SignupResponse("회원가입이 완료되었습니다.");
     }
 
+
     public SigninResponse signin(SigninRequest request) {
         User user = userRepository.findByLoginId(request.getLoginId()).orElseThrow(
             () -> new BusinessException(ErrorCode.USER_ID_ERROR));
