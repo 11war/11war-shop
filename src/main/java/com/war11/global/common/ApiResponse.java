@@ -1,16 +1,9 @@
 package com.war11.global.common;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-@Getter
-@AllArgsConstructor
-public class ApiResponse<T> {
-    private final boolean successOrFail;
-    private final T data;
-    private final String message;
+public record ApiResponse<T>(boolean successOrFail, T data, String message) {
 
     public static <T> ResponseEntity<ApiResponse<T>> success(T data) {
         return ResponseEntity.ok(new ApiResponse<>(true, data, null));
