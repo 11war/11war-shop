@@ -19,10 +19,10 @@ public class UserController {
 
     private final UserService userService;
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<UserResponse> findById(@PathVariable Long id) {
-//        UserResponse userResponse = userService.findById(id);
-//        return new ResponseEntity<>(userResponse, HttpStatus.OK);
-//    }
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> findById(@PathVariable Long id) {
+        UserResponse userResponse = userService.findById(id);
+        return new ResponseEntity<>(userResponse, HttpStatus.OK);
+    }
 
 }
