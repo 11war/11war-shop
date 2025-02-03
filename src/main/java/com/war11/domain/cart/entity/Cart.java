@@ -12,23 +12,24 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class Cart {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
-    private List<CartProduct> cartProducts = new ArrayList<>();
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id")
+  private User user;
 
-    public Cart(User user) {
-        this.user = user;
-    }
+  @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+  private List<CartProduct> cartProducts = new ArrayList<>();
 
-    public Cart(User user, List<CartProduct> cartProducts) {
-        this.user = user;
-        this.cartProducts = cartProducts;
-    }
+  public Cart(User user) {
+    this.user = user;
+  }
+
+  public Cart(User user, List<CartProduct> cartProducts) {
+    this.user = user;
+    this.cartProducts = cartProducts;
+  }
 }
