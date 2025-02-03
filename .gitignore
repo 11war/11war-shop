@@ -8,7 +8,7 @@ gradle/wrapper/gradle-wrapper.jar
 /gradle.*
 .gitattributes
 .gradle
-
+/build
 ### setting ###
 myInfo.yml
 *.properties
