@@ -21,15 +21,7 @@ public class Cart {
   @JoinColumn(name = "user_id")
   private User user;
 
-  @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
-  private List<CartProduct> cartProducts = new ArrayList<>();
-
   public Cart(User user) {
     this.user = user;
-  }
-
-  public Cart(User user, List<CartProduct> cartProducts) {
-    this.user = user;
-    this.cartProducts = cartProducts;
   }
 }
