@@ -28,15 +28,7 @@ public class CartController {
   private final CartService cartService;
 
   // Todo: userId 패스배리어블 말고 토큰에서 빼도록 수정
-  @PostMapping("/{userId}")
-  public ResponseEntity<CartResponse> createCartApi(@PathVariable Long userId) {
-    CartResponse response = cartService.createCart(userId);
-
-    return new ResponseEntity<>(response, HttpStatus.OK);
-  }
-
-  // Todo: userId 패스배리어블 말고 토큰에서 빼도록 수정
-  @PostMapping("/{userId}/{productId}")
+  @PostMapping("/users/{userId}/products/{productId}")
   public ResponseEntity<Void> addToCartApi(@RequestBody AddCartProductRequest request,
       @PathVariable Long userId, @PathVariable Long productId) {
     cartService.addToCart(request, userId, productId);
@@ -45,7 +37,7 @@ public class CartController {
   }
 
   // Todo: userId 패스배리어블 말고 토큰에서 빼도록 수정
-  @GetMapping("/{userId}")
+  @GetMapping("/users/{userId}")
   public ResponseEntity<GetCartResponse> getCartApi(@PathVariable Long userId) {
     GetCartResponse response = cartService.getCart(userId);
 
