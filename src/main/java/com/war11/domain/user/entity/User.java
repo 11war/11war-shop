@@ -8,25 +8,24 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor
 public class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @Column(length = 12, unique = true)
-    private String loginId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(length = 30)
-    private String name;
+  @Column(length = 12, unique = true)
+  private String loginId;
 
-    private String password;
+  @Column(length = 30)
+  private String name;
 
-    @OneToMany(mappedBy = "user")
-    private List<Order> orders = new ArrayList<>();
+  private String password;
 
-    @OneToOne(mappedBy = "user")
-    private Cart cart;
+  @Column
+  private boolean isDeleted;
 }
