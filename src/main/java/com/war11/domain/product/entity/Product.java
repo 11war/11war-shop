@@ -62,4 +62,8 @@ public class Product extends BaseTimeEntity {
         this.quantity = productUpdateRequest.quantity();
         this.status = ProductStatus.from(productUpdateRequest.status());
     }
+
+    public void deleteProduct(){
+        this.isDeleted=true;
+    }
 }

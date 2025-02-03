@@ -8,6 +8,8 @@ import com.war11.domain.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,5 +37,11 @@ public class ProductController {
         ProductUpdateRequest.toDto(productRequest));
 
     return new ResponseEntity<>(productResponse, HttpStatus.OK);
+  }
+
+  @DeleteMapping("/{productId}")
+  public ResponseEntity<String> deleteProduct(@PathVariable Long productId){
+    productService.deleteProduct(productId);
+    return new ResponseEntity<>("삭제되었습니다.",HttpStatus.OK);
   }
 }

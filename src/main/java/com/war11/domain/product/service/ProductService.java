@@ -35,4 +35,13 @@ public class ProductService {
     resultProduct.updateProduct(productUpdateRequest);
     return ProductResponse.toDto(resultProduct);
   }
+
+  public void deleteProduct(Long productId) {
+
+    Product resultProduct = productRepository.findById(productId).
+        orElseThrow (() ->
+            new BusinessException(ErrorCode.NOT_FOUND_PRODUCT_ID));
+    resultProduct.deleteProduct();
+
+  }
 }
