@@ -1,5 +1,8 @@
 package com.war11.domain.product.dto.request;
 
+import lombok.Builder;
+
+@Builder
 public record ProductUpdateRequest(
     Long id,
     String name,
@@ -10,14 +13,14 @@ public record ProductUpdateRequest(
 ) {
 
   public static ProductUpdateRequest toDto(ProductRequest productRequest){
-    return new ProductUpdateRequest(
-        productRequest.id(),
-        productRequest.name(),
-        productRequest.category(),
-        productRequest.price(),
-        productRequest.quantity(),
-        productRequest.status()
-    );
+    return ProductUpdateRequest.builder()
+        .id(productRequest.id())
+        .name(productRequest.name())
+        .category(productRequest.category())
+        .price(productRequest.price())
+        .quantity(productRequest.quantity())
+        .status(productRequest.status())
+        .build();
   }
 
 }

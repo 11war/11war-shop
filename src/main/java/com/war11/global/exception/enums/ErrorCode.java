@@ -14,7 +14,9 @@ public enum ErrorCode {
     //User
 
     //Product
-    INVALID_PRODUCT_STATUS_VALUE(400,"","상품의 상태값이 올바르지 않습니다.");
+    INVALID_PRODUCT_STATUS_VALUE(400,"","상품의 상태값이 올바르지 않습니다."),
+    NOT_FOUND_PRODUCT_ID(404,"" , "해당하는 상품을 찾을 수 없습니다."),
+    REQUIRED_INPUT_VALUE(400,"","필수값이 비어있습니다.");
 
     //Cart
 

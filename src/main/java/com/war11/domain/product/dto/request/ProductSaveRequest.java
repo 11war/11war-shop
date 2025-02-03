@@ -1,6 +1,8 @@
 package com.war11.domain.product.dto.request;
 
+import lombok.Builder;
 
+@Builder
 public record ProductSaveRequest(
     String name,
     String category,
@@ -9,11 +11,12 @@ public record ProductSaveRequest(
 ) {
 
   public static ProductSaveRequest toDto(ProductRequest productRequest){
-    return new ProductSaveRequest(
-        productRequest.name(),
-        productRequest.category(),
-        productRequest.price(),
-        productRequest.quantity()
-    );
+    return ProductSaveRequest.builder()
+        .name(productRequest.name())
+        .category(productRequest.category())
+        .price(productRequest.price())
+        .quantity(productRequest.quantity())
+        .build();
+
   }
 }

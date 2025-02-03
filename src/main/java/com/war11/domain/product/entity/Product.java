@@ -1,9 +1,11 @@
 package com.war11.domain.product.entity;
 
 import com.war11.domain.product.dto.request.ProductSaveRequest;
+import com.war11.domain.product.dto.request.ProductUpdateRequest;
 import com.war11.domain.product.entity.enums.ProductStatus;
 import com.war11.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -31,24 +33,33 @@ public class Product extends BaseTimeEntity {
 
     private boolean isDeleted;
 
-    private Product(String name, String category, Long price, int quantity, String status){
+    @Builder
+    private Product(String name, String category, Long price, int quantity, String status, boolean isDeleted){
         this.name = name;
         this.category = category;
         this.price = price;
         this.quantity = quantity;
         this.status = ProductStatus.from(status);
-        isDeleted = false;
+        this.isDeleted = isDeleted;
     }
 
 
     public static Product toEntity(ProductSaveRequest productSaveRequest){
-        return new Product(
-            productSaveRequest.name(),
-            productSaveRequest.category(),
-            productSaveRequest.price(),
-            productSaveRequest.quantity(),
-            "available");
+        return Product.builder()
+            .name(productSaveRequest.name())
+            .category(productSaveRequest.category())
+            .price(productSaveRequest.price())
+            .quantity(productSaveRequest.quantity())
+            .status("available")
+            .isDeleted(false)
+            .build();
     }
 
-
+    public void updateProduct(ProductUpdateRequest productUpdateRequest) {
+        this.name = productUpdateRequest.name();
+        this.category = productUpdateRequest.category();
+        this.price = productUpdateRequest.price();
+        this.quantity = productUpdateRequest.quantity();
+        this.status = ProductStatus.from(productUpdateRequest.status());
+    }
 }
