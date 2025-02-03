@@ -3,7 +3,6 @@ package com.war11.domain.cart.service;
 import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
 
-import com.war11.domain.cart.dto.CartProductMapper;
 import com.war11.domain.cart.dto.request.AddCartProductRequest;
 import com.war11.domain.cart.entity.Cart;
 import com.war11.domain.cart.entity.CartProduct;
@@ -37,7 +36,6 @@ class CartServiceTest {
   private UserRepository userRepository;
 
   @Mock
-  private CartProductMapper cartProductMapper;
 
   @InjectMocks
   private CartService cartService;
