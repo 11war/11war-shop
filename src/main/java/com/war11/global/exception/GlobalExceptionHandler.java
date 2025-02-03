@@ -13,14 +13,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<?>> handleBusinessException(BusinessException e) {
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(ApiResponse.error(e.getErrorCode().getStatus(), e.getMessage()));
+                .body(ApiResponse.fail(e.getErrorCode().getStatus(), e.getMessage()).getBody());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<?>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(400, "뭔가 잘못됐어요. 잘 좀하세요!"));
+                .body(ApiResponse.fail(HttpStatus.BAD_REQUEST, "뭔가 잘못됐어요. 잘 좀하세요!").getBody());
     }
 
 }
