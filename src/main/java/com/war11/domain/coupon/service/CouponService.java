@@ -13,6 +13,7 @@ import com.war11.domain.order.repository.OrderRepository;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
 import java.util.List;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +48,11 @@ public class CouponService {
 
   @Transactional
   public void removeCouponTemplate(Long id) {
-    couponTemplateRepository.deleteById(id);
+    try{
+      couponTemplateRepository.deleteById(id);
+    } catch (NoSuchElementException e) {
+      throw new NoSuchElementException("템플릿이 없음.");
+    }
   }
 
   @Transactional
