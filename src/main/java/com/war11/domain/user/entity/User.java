@@ -23,6 +23,7 @@ public class User {
     @Column(length = 30)
     private String name;
 
+
     private String password;
 
     @OneToMany(mappedBy = "user")

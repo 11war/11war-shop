@@ -66,7 +66,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
             //인증된 사용자 정보를 저장
             SecurityContextHolder.getContext().setAuthentication(authToken);
-
             chain.doFilter(request,response);
 
             /*

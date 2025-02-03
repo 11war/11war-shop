@@ -18,11 +18,12 @@ import org.springframework.util.StringUtils;
 @Component
 public class JwtUtil {
 
-    private static final long TOKEN_TIME = 60 * 60 * 1000L;
+    private static final long TOKEN_TIME = 60 * 60 * 1000L; //"${jwt.secret.key}")
     private static final String BEARER_PREFIX = "Bearer ";
 
     @Value("${jwt.secret.key}")
     private String secretkey;
+
     private Key key;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
@@ -51,6 +52,7 @@ public class JwtUtil {
         return BEARER_PREFIX +
             Jwts.builder()
                 .setSubject(String.valueOf(user.getId())) //이 토큰을 어따가 왜 쓸건지? 기준설정
+                .setId(String.valueOf(user.getId()))
                 .claim("loginId", user.getLoginId()) //토큰에 상세한 값 추가
                 .claim("name", user.getName())
                 .setExpiration(
@@ -68,6 +70,7 @@ public class JwtUtil {
             return tokenValue.substring(7); // 7번째 인덱스부터 잘라
         }
         throw new BusinessException(ErrorCode.NOT_FOUND_TOKEN);
+        //포스트맨 노출 안됨. 고쳐보기.
     }
 
     /*
