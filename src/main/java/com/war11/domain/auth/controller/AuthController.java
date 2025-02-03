@@ -19,8 +19,13 @@ public class AuthController {
 
     private final AuthService authService;
 
+    /*
+    auth의 경우  Entity 형태로 return 받으면 의도치 않은 정보까지 클라이언트에게 노출될 수 있다고 알고 있어서
+    보안상의 이유로 일반 Response로 return 처리
+     */
     @PostMapping("/signup")
     public SignupResponse signup(@Valid @RequestBody SignupRequest request) {
+        SignupResponse signupResponse = authService.signup(request);
         return authService.signup(request);
     }
 

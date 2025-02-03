@@ -3,6 +3,7 @@ package com.war11.domain.user.controller;
 import com.war11.domain.user.dto.response.UserResponse;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.service.UserService;
+import com.war11.global.common.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,9 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> findById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<UserResponse>> findById(@PathVariable Long id) {
         UserResponse userResponse = userService.findById(id);
-        return new ResponseEntity<>(userResponse, HttpStatus.OK);
+        return ApiResponse.success(userResponse);
     }
 
 }
