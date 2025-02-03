@@ -1,13 +1,16 @@
 package com.war11.domain.cart.entity;
 
+import com.war11.domain.cart.dto.response.CartProductResponse;
 import com.war11.domain.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CartProduct {
@@ -30,18 +33,20 @@ public class CartProduct {
   @Column(nullable = false)
   private boolean isChecked;
 
-  public CartProduct(Cart cart, Product product, Integer quantity, boolean isChecked) {
-    this.cart = cart;
-    this.product = product;
-    this.quantity = quantity;
-    this.isChecked = isChecked;
-  }
-
   public void updateQuantity(Integer quantity) {
     this.quantity = quantity;
   }
 
   public void toggleCheck() {
     isChecked = !isChecked;
+  }
+
+  public CartProductResponse toDto() {
+    return CartProductResponse.builder()
+        .productName(product.getName())
+        .productPrice(product.getPrice())
+        .productQuantity(quantity)
+        .isChecked(isChecked)
+        .build();
   }
 }

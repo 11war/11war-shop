@@ -1,6 +1,5 @@
 package com.war11.domain.cart.service;
 
-import com.war11.domain.cart.dto.CartProductMapper;
 import com.war11.domain.cart.dto.request.AddCartProductRequest;
 import com.war11.domain.cart.dto.request.UpdateCartProductRequest;
 import com.war11.domain.cart.dto.response.CartProductResponse;
@@ -27,7 +26,6 @@ public class CartService {
   private final ProductRepository productRepository;
   private final CartProductRepository cartProductRepository;
   private final UserRepository userRepository;
-  private final CartProductMapper cartProductMapper;
 
   // Todo: userId 토큰에서 뽑아서 받아오도록 수정하자.
   public CartResponse createCart(Long userId) {
@@ -42,14 +40,13 @@ public class CartService {
   public void addToCart(AddCartProductRequest request, Long userId, Long productId) {
     Cart foundCart = cartRepository.findCartByUserId(userId)
         .orElseGet(() -> {
-              Cart newCart = new Cart(userRepository.findById(userId).orElseThrow());
-              return cartRepository.save(newCart);
-            });
+          Cart newCart = new Cart(userRepository.findById(userId).orElseThrow());
+          return cartRepository.save(newCart);
+        });
 
     Product foundProduct = productRepository.findById(productId).orElseThrow();
 
-    CartProduct cartProduct = new CartProduct(foundCart, foundProduct,
-        request.getQuantity(), request.isChecked());
+    CartProduct cartProduct = request.toEntity(foundCart, foundProduct);
     cartProductRepository.save(cartProduct);
   }
 
@@ -58,7 +55,7 @@ public class CartService {
     Cart foundCart = cartRepository.findCartByUserId(userId).orElseThrow();
 
     List<CartProductResponse> foundCartProducts = cartProductRepository.findCartProductByCartId(
-        foundCart.getId()).stream().map(cartProductMapper::toDto).toList();
+        foundCart.getId()).stream().map(CartProduct::toDto).toList();
 
     return new GetCartResponse(foundCartProducts);
   }
@@ -69,7 +66,7 @@ public class CartService {
     foundCartProduct.updateQuantity(request.getQuantity());
     cartProductRepository.save(foundCartProduct);
 
-    return cartProductMapper.toDto(foundCartProduct);
+    return foundCartProduct.toDto();
   }
 
   public CartProductResponse toggleChecked(Long cartProductId) {
@@ -78,6 +75,6 @@ public class CartService {
     foundCartProduct.toggleCheck();
     cartProductRepository.save(foundCartProduct);
 
-    return cartProductMapper.toDto(foundCartProduct);
+    return foundCartProduct.toDto();
   }
 }
