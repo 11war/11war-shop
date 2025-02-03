@@ -8,8 +8,6 @@ gradle/wrapper/gradle-wrapper.jar
 /gradle.*
 .gitattributes
 .gradle
-gradlew
-gradlew.*
 
 ### setting ###
 myInfo.yml
