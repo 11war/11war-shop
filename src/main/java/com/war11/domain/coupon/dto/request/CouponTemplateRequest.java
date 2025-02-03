@@ -4,9 +4,7 @@ import com.war11.domain.coupon.entity.CouponTemplate;
 import com.war11.domain.coupon.entity.enums.CouponStatus;
 import java.time.LocalDateTime;
 import lombok.Builder;
-import lombok.Getter;
 
-@Getter
 @Builder
 public record CouponTemplateRequest(String name, Integer value, Integer quantity, CouponStatus status,
                                     LocalDateTime startDate, LocalDateTime endDate) {
