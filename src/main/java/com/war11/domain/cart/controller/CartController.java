@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,8 +38,8 @@ public class CartController {
   }
 
   // Todo: userId 패스배리어블 말고 토큰에서 빼도록 수정
-  @GetMapping("/users/{userId}")
-  public ResponseEntity<GetCartResponse> getCartApi(@PathVariable Long userId) {
+  @GetMapping("/users/{id}")
+  public ResponseEntity<GetCartResponse> getCartApi(@PathVariable(name = "id") Long userId) {
     GetCartResponse response = cartService.getCart(userId);
 
     return new ResponseEntity<>(response, HttpStatus.OK);
@@ -57,5 +58,19 @@ public class CartController {
       @PathVariable(name = "id") Long cartProductId) {
     CartProductResponse response = cartService.toggleChecked(cartProductId);
     return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  @DeleteMapping("/cart-product/{id}")
+  public ResponseEntity<Void> deleteCartProductApi(@PathVariable(name = "id") Long cartProductId) {
+    cartService.deleteCartProduct(cartProductId);
+
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
+
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteCartApi(@PathVariable(name = "id") Long id) {
+    cartService.deleteCart(id);
+
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 }

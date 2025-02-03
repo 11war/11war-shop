@@ -11,6 +11,7 @@ import com.war11.domain.cart.repository.CartRepository;
 import com.war11.domain.product.entity.Product;
 import com.war11.domain.product.repository.ProductRepository;
 import com.war11.domain.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,21 +51,38 @@ public class CartService {
     return new GetCartResponse(foundCartProducts);
   }
 
+  @Transactional
   public CartProductResponse updateQuantity(Long cartProductId, UpdateCartProductRequest request) {
     CartProduct foundCartProduct = cartProductRepository.findById(cartProductId).orElseThrow();
 
     foundCartProduct.updateQuantity(request.getQuantity());
-    cartProductRepository.save(foundCartProduct);
 
     return foundCartProduct.toDto();
   }
 
+  @Transactional
   public CartProductResponse toggleChecked(Long cartProductId) {
     CartProduct foundCartProduct = cartProductRepository.findById(cartProductId).orElseThrow();
 
     foundCartProduct.toggleCheck();
-    cartProductRepository.save(foundCartProduct);
 
     return foundCartProduct.toDto();
+  }
+
+  @Transactional
+  public void deleteCartProduct(Long cartProductId) {
+    CartProduct foundCartProduct = cartProductRepository.findById(cartProductId).orElseThrow();
+    Long cartId = foundCartProduct.getCart().getId();
+    cartProductRepository.delete(foundCartProduct);
+
+    if (cartProductRepository.findCartProductByCartId(cartId).isEmpty()) {
+      deleteCart(cartId);
+    }
+  }
+
+  @Transactional
+  public void deleteCart(Long cartId) {
+    Cart foundCart = cartRepository.findById(cartId).orElseThrow();
+    cartRepository.delete(foundCart);
   }
 }
