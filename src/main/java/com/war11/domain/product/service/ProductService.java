@@ -28,9 +28,7 @@ public class ProductService {
       throw new BusinessException(ErrorCode.NOT_FOUND_PRODUCT_ID);
     }
 
-    Product resultProduct = productRepository.findById(productUpdateRequest.id()).
-        orElseThrow (() ->
-            new BusinessException(ErrorCode.NOT_FOUND_PRODUCT_ID));
+    Product resultProduct = findById(productUpdateRequest.id());
 
     resultProduct.updateProduct(productUpdateRequest);
     return ProductResponse.toDto(resultProduct);
@@ -38,10 +36,18 @@ public class ProductService {
 
   public void deleteProduct(Long productId) {
 
-    Product resultProduct = productRepository.findById(productId).
-        orElseThrow (() ->
-            new BusinessException(ErrorCode.NOT_FOUND_PRODUCT_ID));
+    Product resultProduct = findById(productId);
     resultProduct.deleteProduct();
 
   }
+
+  public ProductResponse findByProductId(Long productId) {
+    return ProductResponse.toDto(findById(productId));
+  }
+
+   private Product findById(Long productId){
+     return productRepository.findById(productId).
+         orElseThrow (() ->
+             new BusinessException(ErrorCode.NOT_FOUND_PRODUCT_ID));
+   }
 }

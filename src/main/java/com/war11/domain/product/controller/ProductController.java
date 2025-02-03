@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -43,5 +44,11 @@ public class ProductController {
   public ResponseEntity<String> deleteProduct(@PathVariable Long productId){
     productService.deleteProduct(productId);
     return new ResponseEntity<>("삭제되었습니다.",HttpStatus.OK);
+  }
+
+  @GetMapping("/{productId}")
+  public ResponseEntity<ProductResponse> findByProductId(@PathVariable Long productId){
+    ProductResponse productResponse = productService.findByProductId(productId);
+    return new ResponseEntity<>(productResponse,HttpStatus.OK);
   }
 }
