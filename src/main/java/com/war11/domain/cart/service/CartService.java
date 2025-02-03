@@ -41,7 +41,10 @@ public class CartService {
   // Todo: userId 토큰에서 뽑아서 받아오도록 수정하자.
   public void addToCart(AddCartProductRequest request, Long userId, Long productId) {
     Cart foundCart = cartRepository.findCartByUserId(userId)
-        .orElseGet(() -> new Cart(userRepository.findById(userId).orElseThrow()));
+        .orElseGet(() -> {
+              Cart newCart = new Cart(userRepository.findById(userId).orElseThrow());
+              return cartRepository.save(newCart);
+            });
 
     Product foundProduct = productRepository.findById(productId).orElseThrow();
 
