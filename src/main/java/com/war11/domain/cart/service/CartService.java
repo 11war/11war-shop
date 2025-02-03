@@ -1,12 +1,17 @@
 package com.war11.domain.cart.service;
 
+import com.war11.domain.cart.dto.CartProductMapper;
+import com.war11.domain.cart.dto.request.AddCartProductRequest;
+import com.war11.domain.cart.dto.request.UpdateCartProductRequest;
+import com.war11.domain.cart.dto.response.CartProductResponse;
 import com.war11.domain.cart.dto.response.CartResponse;
-import com.war11.domain.cart.dto.response.GetCartProductResponse;
 import com.war11.domain.cart.dto.response.GetCartResponse;
 import com.war11.domain.cart.entity.Cart;
+import com.war11.domain.cart.entity.CartProduct;
 import com.war11.domain.cart.repository.CartProductRepository;
 import com.war11.domain.cart.repository.CartRepository;
-import com.war11.domain.user.entity.User;
+import com.war11.domain.product.entity.Product;
+import com.war11.domain.product.repository.ProductRepository;
 import com.war11.domain.user.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,21 +24,57 @@ import org.springframework.stereotype.Service;
 public class CartService {
 
   private final CartRepository cartRepository;
-  private final UserRepository userRepository;
+  private final ProductRepository productRepository;
   private final CartProductRepository cartProductRepository;
+  private final UserRepository userRepository;
+  private final CartProductMapper cartProductMapper;
 
-  // Todo: User new로 만들어서 넣지 않고 토큰에서 뽑아 넣도록 수정하기
-  public CartResponse createCart() {
-    Cart cart = new Cart(new User());
+  // Todo: userId 토큰에서 뽑아서 받아오도록 수정하자.
+  public CartResponse createCart(Long userId) {
+    Cart cart = new Cart(userRepository.findById(userId).orElseThrow());
+
     cartRepository.save(cart);
+
     return new CartResponse("카트가 생성되었습니다.");
   }
 
-  public GetCartResponse getCart(Long userId){
-    Cart foundCart = cartRepository.findCartByUserId(userId).orElseThrow();
-    List<GetCartProductResponse> foundCartProducts = cartProductRepository.findCartProductByCartId(
-        foundCart.getId()).stream().map(GetCartProductResponse::toDto).toList();
+  // Todo: userId 토큰에서 뽑아서 받아오도록 수정하자.
+  public void addToCart(AddCartProductRequest request, Long userId, Long productId) {
+    Cart foundCart = cartRepository.findCartByUserId(userId)
+        .orElseGet(() -> new Cart(userRepository.findById(userId).orElseThrow()));
 
-    return new GetCartResponse(userId, foundCart.getId(), foundCartProducts);
+    Product foundProduct = productRepository.findById(productId).orElseThrow();
+
+    CartProduct cartProduct = new CartProduct(foundCart, foundProduct,
+        request.getQuantity(), request.isChecked());
+    cartProductRepository.save(cartProduct);
+  }
+
+  // Todo: userId 토큰에서 뽑아서 받아오도록 수정하자.
+  public GetCartResponse getCart(Long userId) {
+    Cart foundCart = cartRepository.findCartByUserId(userId).orElseThrow();
+
+    List<CartProductResponse> foundCartProducts = cartProductRepository.findCartProductByCartId(
+        foundCart.getId()).stream().map(cartProductMapper::toDto).toList();
+
+    return new GetCartResponse(foundCartProducts);
+  }
+
+  public CartProductResponse updateQuantity(Long cartProductId, UpdateCartProductRequest request) {
+    CartProduct foundCartProduct = cartProductRepository.findById(cartProductId).orElseThrow();
+
+    foundCartProduct.updateQuantity(request.getQuantity());
+    cartProductRepository.save(foundCartProduct);
+
+    return cartProductMapper.toDto(foundCartProduct);
+  }
+
+  public CartProductResponse toggleChecked(Long cartProductId) {
+    CartProduct foundCartProduct = cartProductRepository.findById(cartProductId).orElseThrow();
+
+    foundCartProduct.toggleCheck();
+    cartProductRepository.save(foundCartProduct);
+
+    return cartProductMapper.toDto(foundCartProduct);
   }
 }
