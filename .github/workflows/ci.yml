@@ -27,4 +27,4 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           gradle-version: '8.5'
-          arguments: build test checkstyleMain  # 모든 gradle 작업을 여기서 실행
+          arguments: build
