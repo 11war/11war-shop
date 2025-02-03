@@ -62,8 +62,8 @@ public class AuthControllerTest {
         SigninResponse loginUser = authService.signin(request);
 
         //then
+        assertThat(loginUser.getToken()).isEqualTo(token);
         assertThat(loginUser.getMessage()).isEqualTo("로그인에 성공했습니다.");
-
     }
 
 }
