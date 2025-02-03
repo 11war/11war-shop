@@ -10,10 +10,11 @@ public enum ErrorCode {
     // Common
     INVALID_INPUT_VALUE(400, "1", "1"),
     RESOURCE_NOT_FOUND(404,"",""),
-    INTERNAL_SERVER_ERROR(500,"","");
+    INTERNAL_SERVER_ERROR(500,"",""),
     //User
 
     //Product
+    INVALID_PRODUCT_STATUS_VALUE(400,"","상품의 상태값이 올바르지 않습니다.");
 
     //Cart
 
