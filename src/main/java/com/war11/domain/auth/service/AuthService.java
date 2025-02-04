@@ -59,11 +59,4 @@ public class AuthService {
         return new SigninResponse(token,"로그인에 성공했습니다.");
     }
 
-    public SignupResponse logout(String token) {
-        if (EXPIRED_TOKEN_SET.contains(token)) {
-            throw new BusinessException(ErrorCode.INVALID_TOKEN);
-        }
-        EXPIRED_TOKEN_SET.add(token);
-        return new SignupResponse("로그아웃에 성공했습니다.");
-    }
 }
