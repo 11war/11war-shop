@@ -1,5 +1,6 @@
 package com.war11.domain.user.controller;
 
+import com.war11.domain.user.dto.request.UserRequest;
 import com.war11.domain.user.dto.response.UserResponse;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.service.UserService;
@@ -13,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,7 +41,11 @@ public class UserController {
         return ApiResponse.successPage(pageUser);
     }
 
-//    @PatchMapping("/{id}")
-//    public ResponseEntity<ApiResponse<UserResponse>> upd
+    @PatchMapping()
+    public ResponseEntity<ApiResponse<UserResponse>> updateUser(@AuthenticationPrincipal CustomUserDetails userDetails , @RequestBody
+        UserRequest request) {
+        UserResponse userResponse = userService.updateUsers(userDetails, request);
+        return ApiResponse.success(userResponse);
+    }
 
 }

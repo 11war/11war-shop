@@ -1,9 +1,11 @@
 package com.war11.domain.user.service;
 
 import com.war11.domain.auth.service.AuthService;
+import com.war11.domain.user.dto.request.UserRequest;
 import com.war11.domain.user.dto.response.UserResponse;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
+import com.war11.global.common.ApiResponse;
 import com.war11.global.config.CustomUserDetails;
 import com.war11.global.exception.BusinessException;
 import com.war11.global.exception.enums.ErrorCode;
@@ -26,7 +28,7 @@ public class UserService {
         User foundUser = userRepository.findById(id).orElseThrow(
             () -> new BusinessException(ErrorCode.NOT_FOUND_ID)
         );
-        return UserResponse.toDto(foundUser);
+        return new UserResponse(foundUser);
     }
 
     public Page<UserResponse> findAllUsers(CustomUserDetails userDetails, int page, int size) {
@@ -38,5 +40,12 @@ public class UserService {
             userDetails.getLoginId(),
             userDetails.getUsername()
         ));
+    }
+
+    @Transactional
+    public UserResponse updateUsers(CustomUserDetails userDetails, UserRequest request) {
+        User user = userRepository.findById(userDetails.getId()).orElseThrow(
+            () -> new BusinessException(ErrorCode.NOT_FOUND_ID));
+        return user.toDto(request, userDetails);
     }
 }

@@ -2,6 +2,9 @@ package com.war11.domain.user.entity;
 
 import com.war11.domain.cart.entity.Cart;
 import com.war11.domain.order.entity.Order;
+import com.war11.domain.user.dto.request.UserRequest;
+import com.war11.domain.user.dto.response.UserResponse;
+import com.war11.global.config.CustomUserDetails;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -43,5 +46,15 @@ public class User {
         this.loginId = loginId;
         this.name = name;
         this.password = password;
+    }
+
+    //비밀번호 수정 부분 아직 추가 못함, 일단 이름수정만 추가, 아이디와 식별자는 수정불가
+
+    public UserResponse toDto(UserRequest request, CustomUserDetails userDetails) {
+        return UserResponse.builder()
+            .id(userDetails.getId())
+            .loginId(userDetails.getLoginId())
+            .name(request.getName())
+            .build();
     }
 }
