@@ -1,5 +1,7 @@
 package com.war11.domain.product.dto.request;
 
+import com.war11.domain.product.entity.Product;
+import com.war11.domain.product.entity.enums.ProductStatus;
 import lombok.Builder;
 
 @Builder
@@ -9,18 +11,20 @@ public record ProductUpdateRequest(
     String category,
     Long price,
     int quantity,
-    String status
+    ProductStatus status
 ) {
 
-  public static ProductUpdateRequest toDto(ProductRequest productRequest){
-    return ProductUpdateRequest.builder()
-        .id(productRequest.id())
-        .name(productRequest.name())
-        .category(productRequest.category())
-        .price(productRequest.price())
-        .quantity(productRequest.quantity())
-        .status(productRequest.status())
+  public static Product toEntity(ProductUpdateRequest productUpdateRequest){
+    return Product.builder()
+        .name(productUpdateRequest.name())
+        .category(productUpdateRequest.category())
+        .price(productUpdateRequest.price())
+        .quantity(productUpdateRequest.quantity())
+        .status(productUpdateRequest.status())
+        .isDeleted(false)
         .build();
   }
+
+
 
 }

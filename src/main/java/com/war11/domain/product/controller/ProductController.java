@@ -26,16 +26,14 @@ public class ProductController {
   @PostMapping
   public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest productRequest){
 
-    ProductResponse productResponse = productService.createProduct(
-        ProductSaveRequest.toDto(productRequest));
+    ProductResponse productResponse = productService.createProduct(productRequest);
 
     return new ResponseEntity<>(productResponse, HttpStatus.CREATED);
   }
 
   @PutMapping
-  public ResponseEntity<ProductResponse> updateProduct(@RequestBody ProductRequest productRequest){
-    ProductResponse productResponse = productService.updateProduct(
-        ProductUpdateRequest.toDto(productRequest));
+  public ResponseEntity<ProductResponse> updateProduct(@RequestBody ProductUpdateRequest productUpdateRequest){
+    ProductResponse productResponse = productService.updateProduct(productUpdateRequest);
 
     return new ResponseEntity<>(productResponse, HttpStatus.OK);
   }

@@ -17,16 +17,5 @@ public record ProductResponse(
     LocalDateTime updatedAt
 ) {
 
-  public static ProductResponse toDto(Product product){
-    return ProductResponse.builder()
-        .id(product.getId())
-        .name(product.getName())
-        .category(product.getCategory())
-        .price(product.getPrice())
-        .quantity(product.getQuantity())
-        .status(product.getStatus())
-        .createdAt(product.getCreatedAt())
-        .updatedAt(product.getUpdatedAt())
-        .build();
-  }
+
 }

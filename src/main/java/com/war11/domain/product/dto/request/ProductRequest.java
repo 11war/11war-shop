@@ -2,12 +2,12 @@ package com.war11.domain.product.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.war11.domain.product.entity.Product;
+import com.war11.domain.product.entity.enums.ProductStatus;
 import jakarta.validation.constraints.NotBlank;
 
 @JsonIgnoreProperties( ignoreUnknown = true )
 public record ProductRequest(
-    @JsonProperty("id")
-    Long id,
     @NotBlank(message = "상품명은 빈값일 수 없습니다.")
     @JsonProperty("name")
     String name,
@@ -21,5 +21,16 @@ public record ProductRequest(
     @JsonProperty("quantity")
     int quantity,
     @JsonProperty("status")
-    String status) {
+    ProductStatus status) {
+
+    public Product toEntity(ProductRequest productRequest){
+        return Product.builder()
+            .name(productRequest.name())
+            .category(productRequest.category())
+            .price(productRequest.price())
+            .quantity(productRequest.quantity())
+            .status(ProductStatus.valueOf("AVAILABLE"))
+            .isDeleted(false)
+            .build();
+    }
 }

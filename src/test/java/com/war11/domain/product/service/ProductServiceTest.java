@@ -1,4 +1,4 @@
-package com.war11.product;
+package com.war11.domain.product.service;
 
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -8,15 +8,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.war11.domain.product.dto.request.ProductRequest;
-import com.war11.domain.product.dto.request.ProductSaveRequest;
 import com.war11.domain.product.dto.request.ProductUpdateRequest;
 import com.war11.domain.product.dto.response.ProductResponse;
 import com.war11.domain.product.entity.Product;
-import com.war11.domain.product.entity.enums.ProductStatus;
 import com.war11.domain.product.repository.ProductRepository;
-import com.war11.domain.product.service.ProductService;
 import java.lang.reflect.Field;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,44 +33,42 @@ public class ProductServiceTest {
   @Mock
   private ProductRepository productRepository;
 
-  @Test
-  void 상품_저장_성공() {
-    //given
+  Product product;
+
+  @BeforeEach
+  void 상품_생성_전처리(){
+
     final String name = "갤럭시북";
     final String category = "노트북";
     final Long price = 1270000L;
     final int quantity = 15;
+  product = Product.builder()
+      .name(name)
+      .category(category)
+      .price(price)
+      .quantity(quantity)
+      .build();
+  }
 
-    ProductSaveRequest productSaveRequest = ProductSaveRequest.toDto(new ProductRequest(
-        null,
-        name,
-        category,
-        price,
-        quantity,
-        null));
+  @Test
+  void 상품_저장_성공() {
+    //given
 
-    Product product = Product.toEntity(ProductSaveRequest.toDto(new ProductRequest(
-        null,
-        name,
-        category,
-        price,
-        quantity,
-        null)));
+    ProductRequest productRequest = new ProductRequest(
+        product.getName(),
+        product.getCategory(),
+        product.getPrice(),
+        product.getQuantity(),
+        product.getStatus());
+
 
     when(productRepository.save(any(Product.class))).thenReturn(product);
 
     //when
-    ProductResponse actualResult = productService.createProduct(productSaveRequest);
+    ProductResponse actualResult = productService.createProduct(productRequest);
 
     //then
-    ProductResponse expectResult = ProductResponse.builder()
-        .id(null)
-        .name(name)
-        .category(category)
-        .price(price)
-        .quantity(quantity)
-        .status(ProductStatus.from("available"))
-        .build();
+    ProductResponse expectResult = product.toDto(product);
     assertThat(actualResult)
         .usingRecursiveComparison()
         .isEqualTo(expectResult);
@@ -83,41 +79,24 @@ public class ProductServiceTest {
    void 상품_수정_성공() {
 
     //given
-    final String name = "갤럭시북";
-    final String category = "노트북";
-    final Long price = 1270000L;
-    final int quantity = 15;
 
-    ProductUpdateRequest productUpdateRequest = ProductUpdateRequest.toDto(new ProductRequest(
+    ProductUpdateRequest productUpdateRequest = new ProductUpdateRequest(
         1L,
-        name,
-        category,
-        price,
-        quantity,
-        "available"));
+        product.getName(),
+        product.getCategory(),
+        product.getPrice(),
+        product.getQuantity(),
+        product.getStatus()
+    );
 
-    Product product = Product.toEntity(ProductSaveRequest.toDto(new ProductRequest(
-        null,
-        name,
-        category,
-        price,
-        quantity,
-        "available")));
 
-    when(productRepository.findById(any(Long.class))).thenReturn(Optional.ofNullable(product));
+    when(productRepository.findById(any(Long.class))).thenReturn(Optional.of(product));
 
     //when
     ProductResponse actualResult = productService.updateProduct(productUpdateRequest);
 
     //then
-    ProductResponse expectResult = ProductResponse.builder()
-        .id(null)
-        .name(name)
-        .category(category)
-        .price(price)
-        .quantity(quantity)
-        .status(ProductStatus.from("available"))
-        .build();
+    ProductResponse expectResult = product.toDto(product);
     assertThat(actualResult)
         .usingRecursiveComparison()
         .isEqualTo(expectResult);
@@ -128,19 +107,7 @@ public class ProductServiceTest {
   @Test
   void 상품_삭제_성공() {
     //given
-    final String name = "갤럭시북";
-    final String category = "노트북";
-    final Long price = 1270000L;
-    final int quantity = 15;
 
-
-    Product product = Product.toEntity(ProductSaveRequest.toDto(new ProductRequest(
-        null,
-        name,
-        category,
-        price,
-        quantity,
-        "available")));
     Field id = ReflectionUtils.findField(Product.class,"id");
     ReflectionUtils.makeAccessible(id);
     ReflectionUtils.setField(id,product,1L);
