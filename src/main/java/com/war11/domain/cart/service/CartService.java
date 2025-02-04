@@ -27,7 +27,6 @@ public class CartService {
   private final CartProductRepository cartProductRepository;
   private final UserRepository userRepository;
 
-  // Todo: userId 토큰에서 뽑아서 받아오도록 수정하자.
   public void addToCart(AddCartProductRequest request, Long userId, Long productId) {
     Cart foundCart = cartRepository.findCartByUserId(userId)
         .orElseGet(() -> {
@@ -41,7 +40,6 @@ public class CartService {
     cartProductRepository.save(cartProduct);
   }
 
-  // Todo: userId 토큰에서 뽑아서 받아오도록 수정하자.
   public GetCartResponse getCart(Long userId) {
     Cart foundCart = cartRepository.findCartByUserId(userId).orElseThrow();
 

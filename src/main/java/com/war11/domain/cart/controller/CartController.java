@@ -7,11 +7,13 @@ import com.war11.domain.cart.dto.response.CartResponse;
 import com.war11.domain.cart.dto.response.GetCartResponse;
 import com.war11.domain.cart.service.CartService;
 import com.war11.global.common.ApiResponse;
+import com.war11.global.config.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -29,18 +31,19 @@ public class CartController {
 
   private final CartService cartService;
 
-  // Todo: userId 패스배리어블 말고 토큰에서 빼도록 수정
-  @PostMapping("/users/{userId}/products/{productId}")
+  @PostMapping("/products/{productId}")
   public ResponseEntity<ApiResponse<Void>> addToCartApi(@RequestBody AddCartProductRequest request,
-      @PathVariable Long userId, @PathVariable Long productId) {
+      @PathVariable Long productId, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    Long userId = userDetails.getId();
     cartService.addToCart(request, userId, productId);
 
     return ApiResponse.noContentAndSendMessage("장바구니에 상품이 추가되었습니다.");
   }
 
-  // Todo: userId 패스배리어블 말고 토큰에서 빼도록 수정
-  @GetMapping("/users/{id}")
-  public ResponseEntity<ApiResponse<GetCartResponse>> getCartApi(@PathVariable(name = "id") Long userId) {
+  @GetMapping
+  public ResponseEntity<ApiResponse<GetCartResponse>> getCartApi(
+      @AuthenticationPrincipal CustomUserDetails userDetails) {
+    Long userId = userDetails.getId();
     GetCartResponse response = cartService.getCart(userId);
 
     return ApiResponse.success(response);
@@ -62,7 +65,8 @@ public class CartController {
   }
 
   @DeleteMapping("/cart-product/{id}")
-  public ResponseEntity<ApiResponse<Void>> deleteCartProductApi(@PathVariable(name = "id") Long cartProductId) {
+  public ResponseEntity<ApiResponse<Void>> deleteCartProductApi(
+      @PathVariable(name = "id") Long cartProductId) {
     cartService.deleteCartProduct(cartProductId);
 
     return ApiResponse.noContentAndSendMessage("장바구니에서 상품이 삭제되었습니다.");
