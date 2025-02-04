@@ -30,11 +30,21 @@ public class OrderController {
     return ApiResponse.success(response);
   }
 
+  //Todo userId는 토큰에서 받아올 거임.
   @GetMapping("/users/{userId}")
   public ResponseEntity<ApiResponse<List<GetAllOrdersResponse>>> getAllOrdersApi(
       @PathVariable Long userId) {
     List<GetAllOrdersResponse> responses = orderService.getAllOrders(userId);
 
     return ApiResponse.success(responses);
+  }
+
+  //Todo userId는 토큰에서 받아올 거임.
+  @GetMapping("/{ordersId}/users/{userId}")
+  public ResponseEntity<ApiResponse<OrderResponse>> getOrderApi(
+      @PathVariable Long userId,@PathVariable Long ordersId) {
+    OrderResponse response = orderService.getOrder(userId,ordersId);
+
+    return ApiResponse.success(response);
   }
 }

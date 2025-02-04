@@ -70,4 +70,16 @@ public class OrderService {
         })
         .toList();
   }
+
+  // Todo: 토큰에서 userId 뽑아오게 바꾸자
+  public OrderResponse getOrder(Long userId, Long orderId) {
+    Order order = orderRepository.findById(orderId).orElseThrow();
+    List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(orderId);
+
+    List<OrderProductResponse> orderProductResponses = orderProducts.stream()
+        .map(OrderProduct::toDto)
+        .toList();
+
+    return order.toDto(orderProductResponses);
+  }
 }
