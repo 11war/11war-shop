@@ -1,5 +1,6 @@
 package com.war11.domain.product.service;
 
+import com.war11.domain.product.dto.request.ProductFindRequest;
 import com.war11.domain.product.dto.request.ProductRequest;
 import com.war11.domain.product.dto.request.ProductUpdateRequest;
 import com.war11.domain.product.dto.response.ProductResponse;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,32 +29,49 @@ public class ProductService {
 
   }
 
+  @Transactional
   public ProductResponse updateProduct(ProductUpdateRequest productUpdateRequest) {
 
-    Product resultProduct = findById(productUpdateRequest.id());
-
+    productValidationById(productUpdateRequest.id());
+    Product resultProduct = productRepository.findByIdForUpdate(productUpdateRequest.id());
     resultProduct.updateProduct(productUpdateRequest);
     return resultProduct.toDto(resultProduct);
   }
 
+  @Transactional
   public void deleteProduct(Long productId) {
 
-    Product resultProduct = findById(productId);
+    productValidationById(productId);
+    Product resultProduct = productRepository.findByIdForUpdate(productId);
     resultProduct.deleteProduct();
-
   }
 
   public ProductResponse findByProductId(Long productId) {
-    Product result = findById(productId);
+    Product result = productValidationById(productId);
     return result.toDto(result);
   }
 
-   private Product findById(Long productId){
+   private Product productValidationById(Long productId){
      return productRepository.findById(productId).
          orElseThrow (() ->
              new BusinessException(ErrorCode.NOT_FOUND_PRODUCT_ID));
    }
 
+   public Page<ProductResponse> findByProductName(ProductFindRequest productFindRequest) {
 
+      Order order;
+      if(productFindRequest.getOrder().equals("asc")){
+        order = Sort.Order.asc("updatedAt");
+      }else {
+        order = Sort.Order.desc("updatedAt");
+      }
+
+     Pageable pageable = PageRequest.of(
+         productFindRequest.getPage() - 1,
+         productFindRequest.getSize(),
+         Sort.by(order));
+
+      return productRepository.findByProductName(productFindRequest,pageable);
+   }
 
    }
