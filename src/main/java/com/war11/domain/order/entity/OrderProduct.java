@@ -22,9 +22,11 @@ public class OrderProduct {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @Column(nullable = false)
+    private String productName;
+
+    @Column(nullable = false)
+    private Long productPrice;
 
     @Column(nullable = false)
     private Integer quantity;
@@ -32,7 +34,8 @@ public class OrderProduct {
     public OrderProductResponse toDto() {
         return OrderProductResponse.builder()
             .order(order)
-            .product(product)
+            .productName(productName)
+            .productPrice(productPrice)
             .quantity(quantity)
             .build();
     }

@@ -8,7 +8,8 @@ import lombok.Builder;
 @Builder
 public record OrderProductResponse(
     Order order,
-    Product product,
+    String productName,
+    Long productPrice,
     Integer quantity
 
 ) {
@@ -16,7 +17,8 @@ public record OrderProductResponse(
   public OrderProduct toEntity() {
     return OrderProduct.builder()
         .order(order)
-        .product(product)
+        .productName(productName)
+        .productPrice(productPrice)
         .quantity(quantity)
         .build();
   }
