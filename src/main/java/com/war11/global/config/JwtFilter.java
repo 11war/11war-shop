@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,12 +25,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 /*
 SpringSecurity 사용을 위해 OncePerRequestFilter를 extend 함.
  */
+@Slf4j
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
-    private RequestMatcher whitList = new AntPathRequestMatcher("/auth/**");
+    private final RequestMatcher whitList = new AntPathRequestMatcher("/auth/**");
 
     @Override
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -47,6 +49,11 @@ public class JwtFilter extends OncePerRequestFilter {
          */
         if(bearerJwt.isBlank()) {
             throw new BusinessException(ErrorCode.NOT_FOUND_TOKEN);
+        }
+
+        if (JwtUtil.EXPIRED_TOKEN_SET.contains(bearerJwt)) {
+            sendError(response,HttpServletResponse.SC_FORBIDDEN,"이미 로그아웃 되었습니다.");
+            return;
         }
 
         try {
@@ -72,14 +79,22 @@ public class JwtFilter extends OncePerRequestFilter {
             얘는 맘에들지 않음, 뭔가 다른 방식으로 고쳐보자.
              */
         } catch (SecurityException | MalformedJwtException e) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않는 JWT 서명입니다.");
+            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않는 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "만료된 JWT 토큰입니다.");
+            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "만료된 JWT 토큰입니다.");
         } catch (UnsupportedJwtException e) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "지원되지 않는 JWT 토큰입니다.");
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "지원되지 않는 JWT 토큰입니다.");
         } catch (Exception e) {
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "그 외의 오류입니다..");
         }
+    }
 
+    //postman에서 확인할 수 있게 json 형태로 출력하는 메서드
+    private void sendError (HttpServletResponse response,int errorCode, String msg) throws IOException {
+        response.setStatus(errorCode);
+        response.setContentType("appliction/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(msg);
+        response.getWriter().flush();
     }
 }
