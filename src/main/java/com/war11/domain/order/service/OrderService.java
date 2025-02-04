@@ -54,6 +54,7 @@ public class OrderService {
     return order.toDto(responses);
   }
 
+  // Todo: 토큰에서 userId 뽑아오게 바꾸자
   public List<GetAllOrdersResponse> getAllOrders (Long userId) {
     List<Order> orders = orderRepository.findByUserId(userId);
 

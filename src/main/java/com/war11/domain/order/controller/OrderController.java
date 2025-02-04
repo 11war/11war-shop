@@ -22,6 +22,7 @@ public class OrderController {
 
   private final OrderService orderService;
 
+  //Todo userId는 토큰에서 받아올 거임.
   @PostMapping("/users/{userId}")
   public ResponseEntity<ApiResponse<OrderResponse>> createOrderApi(@PathVariable Long userId) {
     Long discountPrice = 30000L;
