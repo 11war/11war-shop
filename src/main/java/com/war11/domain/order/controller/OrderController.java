@@ -21,7 +21,8 @@ public class OrderController {
 
   @PostMapping("/users/{userId}")
   public ResponseEntity<ApiResponse<OrderResponse>> createOrderApi(@PathVariable Long userId) {
-    OrderResponse response = orderService.createOrder(userId);
+    Long discountPrice = 30000L;
+    OrderResponse response = orderService.createOrder(userId, discountPrice);
 
     return ApiResponse.success(response);
   }

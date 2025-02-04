@@ -8,6 +8,7 @@ import com.war11.domain.order.dto.response.OrderProductResponse;
 import com.war11.domain.order.dto.response.OrderResponse;
 import com.war11.domain.order.entity.Order;
 import com.war11.domain.order.entity.OrderProduct;
+import com.war11.domain.order.entity.enums.OrderStatus;
 import com.war11.domain.order.repository.OrderProductRepository;
 import com.war11.domain.order.repository.OrderRepository;
 import com.war11.domain.product.repository.ProductRepository;
@@ -30,7 +31,8 @@ public class OrderService {
   private final OrderRepository orderRepository;
   private final OrderProductRepository orderProductRepository;
 
-  public OrderResponse createOrder(Long userId) {
+  // Todo: userId는 토큰에서 받도록 수정, 주문 생성 시 상품에서 productQuantity 감소되도록 수정
+  public OrderResponse createOrder(Long userId, Long discountPrice) {
     User foundUser = userRepository.findById(userId).orElseThrow();
     Order order = orderRepository.save(new Order(foundUser));
     Cart foundCart = cartRepository.findCartByUserId(userId).orElseThrow();
@@ -46,6 +48,8 @@ public class OrderService {
 
     List<OrderProductResponse> responses = orderProducts.stream()
         .map(OrderProduct::toDto).toList();
+
+    orderRepository.save(order.copyOf(discountPrice, orderProducts));
 
     return order.toDto(responses);
   }
