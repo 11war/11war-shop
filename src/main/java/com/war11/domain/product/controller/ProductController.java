@@ -6,6 +6,7 @@ import com.war11.domain.product.dto.request.ProductUpdateRequest;
 import com.war11.domain.product.dto.response.ProductResponse;
 import com.war11.domain.product.service.ProductService;
 import com.war11.global.common.ApiResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class ProductController {
   private final ProductService productService;
 
   @PostMapping
-  public ResponseEntity<ApiResponse<ProductResponse>> createProduct(@RequestBody ProductRequest productRequest){
+  public ResponseEntity<ApiResponse<ProductResponse>> createProduct(@Valid @RequestBody ProductRequest productRequest){
 
     ProductResponse productResponse = productService.createProduct(productRequest);
 
@@ -34,7 +35,7 @@ public class ProductController {
   }
 
   @PutMapping
-  public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(@RequestBody ProductUpdateRequest productUpdateRequest){
+  public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(@Valid @RequestBody ProductUpdateRequest productUpdateRequest){
     ProductResponse productResponse = productService.updateProduct(productUpdateRequest);
 
     return ApiResponse.success(productResponse);
@@ -53,7 +54,7 @@ public class ProductController {
   }
 
   @GetMapping
-  public Page<ProductResponse> findByProductName(@RequestParam(required=false) ProductFindRequest productFindRequest) {
+  public Page<ProductResponse> findByProductName(@Valid ProductFindRequest productFindRequest) {
     return productService.findByProductName(productFindRequest);
   }
 }

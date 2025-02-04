@@ -1,6 +1,5 @@
 package com.war11.domain.product.entity;
 
-import com.war11.domain.product.dto.request.ProductSaveRequest;
 import com.war11.domain.product.dto.request.ProductUpdateRequest;
 import com.war11.domain.product.dto.response.ProductResponse;
 import com.war11.domain.product.entity.enums.ProductStatus;

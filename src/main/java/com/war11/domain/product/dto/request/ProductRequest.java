@@ -19,9 +19,7 @@ public record ProductRequest(
     Long price,
     @NotBlank(message = "수량은 빈값일 수 없습니다.")
     @JsonProperty("quantity")
-    int quantity,
-    @JsonProperty("status")
-    ProductStatus status) {
+    int quantity) {
 
     public Product toEntity(ProductRequest productRequest){
         return Product.builder()

@@ -53,7 +53,7 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
 
 long total = Optional.ofNullable(jpaQueryFactory
-    .select(product.id.count())
+    .select(product.count())
     .from(product)
     .where(
         findName(productFindRequest.getName()),
@@ -80,7 +80,7 @@ long total = Optional.ofNullable(jpaQueryFactory
   }
 
   private BooleanExpression findName(String name) {
-    return name != null ? product.name.eq(name) : null;
+    return name != null ? product.name.like("%"+name+"%") : null;
   }
   private BooleanExpression findCategory(String category) {
     return category != null ? product.category.eq(category) : null;
