@@ -1,13 +1,18 @@
 package com.war11.domain.order.entity;
 
+import com.war11.domain.order.dto.response.OrderProductResponse;
 import com.war11.domain.product.entity.Product;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class OrderProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,4 +28,12 @@ public class OrderProduct {
 
     @Column(nullable = false)
     private Integer quantity;
+
+    public OrderProductResponse toDto() {
+        return OrderProductResponse.builder()
+            .order(order)
+            .product(product)
+            .quantity(quantity)
+            .build();
+    }
 }
