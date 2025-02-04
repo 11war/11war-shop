@@ -39,6 +39,7 @@ public class CouponTemplate extends BaseTimeEntity {
     private LocalDateTime endDate;
 
     @OneToMany(mappedBy = "couponTemplate")
+    @Builder.Default
     private List<Coupon> coupons = new ArrayList<>();
 
     public void updateCouponTemplate(CouponTemplateUpdateRequest updateRequest) {
