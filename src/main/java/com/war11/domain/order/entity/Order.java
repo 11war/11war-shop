@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "`order`")
+@Table(name = "order")
 public class Order extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,11 +24,17 @@ public class Order extends BaseTimeEntity {
     private User user;
 
     private Long discountedPrice;
+
+    @Column(nullable = false)
     private Long totalPrice;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<OrderProduct> orderProducts = new ArrayList<>();
+    public Order(User user, Long discountedPrice, Long totalPrice, OrderStatus status) {
+        this.user = user;
+        this.discountedPrice = discountedPrice;
+        this.totalPrice = totalPrice;
+        this.status = status;
+    }
 }
