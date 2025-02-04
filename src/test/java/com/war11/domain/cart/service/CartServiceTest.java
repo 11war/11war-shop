@@ -12,6 +12,7 @@ import com.war11.domain.product.entity.Product;
 import com.war11.domain.product.repository.ProductRepository;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -103,7 +104,7 @@ class CartServiceTest {
     // 장바구니 저장 메서드가 실행된적이 없는지(never) 확인
     verify(cartRepository, never()).save(any());
 
-    // 새로운 상품이 장바구니에 정상적으로 추가되었는지 확인
+    // 새로운 상품이 장바구니에 정상적으로 추가되었는지 확인(캡쳐 객체)
     ArgumentCaptor<CartProduct> cartProductCaptor = ArgumentCaptor.forClass(CartProduct.class);
     verify(cartProductRepository).save(cartProductCaptor.capture());
     CartProduct savedCartProduct = cartProductCaptor.getValue();
@@ -113,4 +114,27 @@ class CartServiceTest {
     assertThat(savedCartProduct.getQuantity()).isEqualTo(2);
     assertThat(savedCartProduct.isChecked()).isTrue();
   }
+
+  @Test
+  void 장바구니에서_마지막_상품_삭제시_장바구니도_삭제() {
+    // given: cart 와 cart 의 id 를 가지고 있는 cartProduct 세팅, 카트프로덕트 검색 결과 세팅(원래 1개, 삭제 후 빈 리스트)
+    when(cartProduct1.getId()).thenReturn(1L);
+    when(cartProduct1.getCart()).thenReturn(cart);
+    when(cart.getId()).thenReturn(1L);
+
+    when(cartProductRepository.findById(cartProduct1.getId()))
+        .thenReturn(Optional.of(cartProduct1));
+
+    when(cartProductRepository.findCartProductByCartIdAndIsChecked(1L, true))
+        .thenReturn(List.of(cartProduct1))
+        .thenReturn(List.of());
+
+    // when
+    cartService.deleteCartProduct(cartProduct1.getId());
+
+    // then
+    verify(cartProductRepository).delete(cartProduct1);
+    verify(cartRepository).delete(cart);
+  }
+
 }
