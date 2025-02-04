@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "order")
+@Table(name = "`order`")
 public class Order extends BaseTimeEntity {
 
   @Id

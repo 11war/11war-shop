@@ -1,16 +1,20 @@
 package com.war11.domain.auth.service;
 
+import static com.war11.global.util.JwtUtil.EXPIRED_TOKEN_SET;
+
 import com.war11.domain.auth.dto.request.SigninRequest;
 import com.war11.domain.auth.dto.request.SignupRequest;
 import com.war11.domain.auth.dto.response.SigninResponse;
 import com.war11.domain.auth.dto.response.SignupResponse;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
+import com.war11.global.config.CustomUserDetails;
 import com.war11.global.exception.BusinessException;
 import com.war11.global.exception.enums.ErrorCode;
 import com.war11.global.util.JwtUtil;
-import jakarta.validation.Valid;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,4 +58,5 @@ public class AuthService {
 
         return new SigninResponse(token,"로그인에 성공했습니다.");
     }
+
 }
