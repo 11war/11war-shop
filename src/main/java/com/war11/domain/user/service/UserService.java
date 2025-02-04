@@ -6,7 +6,6 @@ import com.war11.domain.user.repository.UserRepository;
 import com.war11.global.exception.BusinessException;
 import com.war11.global.exception.enums.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
