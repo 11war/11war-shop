@@ -2,21 +2,28 @@ package com.war11.global.exception.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
 public enum ErrorCode {
 
     // Common
-    INVALID_INPUT_VALUE(400, "1", "1"),
-    RESOURCE_NOT_FOUND(404,"",""),
-    INTERNAL_SERVER_ERROR(500,"",""),
+    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "1", "1"),
+    RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND,"",""),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"",""),
+
+    //Auth
+    NOT_FOUND_TOKEN(HttpStatus.NOT_FOUND,"","토큰이 유효하지 않습니다."),
+    ID_ALREADY_EXISTS(HttpStatus.CONFLICT,"","이미 해당 아이디가 존재합니다."),
+    NOT_FOUND_ID(HttpStatus.BAD_REQUEST,"", "해당 아이디가 존재하지 않습니다."),
+
+
     //User
+    USER_ID_ERROR(HttpStatus.UNAUTHORIZED,"1","아이디나 비밀번호가 올바르지 않습니다."),
+    USER_PW_ERROR(HttpStatus.UNAUTHORIZED,"2","아이디나 비밀번호가 올바르지 않습니다.");
 
     //Product
-    INVALID_PRODUCT_STATUS_VALUE(400,"","상품의 상태값이 올바르지 않습니다."),
-    NOT_FOUND_PRODUCT_ID(404,"" , "해당하는 상품을 찾을 수 없습니다."),
-    REQUIRED_INPUT_VALUE(400,"","필수값이 비어있습니다.");
 
     //Cart
 
@@ -24,7 +31,7 @@ public enum ErrorCode {
 
     //Coupon
 
-    private final int status;
+    private final HttpStatus status;
     private final String code;
     private final String message;
 }

@@ -11,3 +11,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+# jwt 토큰 사용을 위한 비밀키
+jwt:
+  secret:
+    key: ${jwt.key}
+
+

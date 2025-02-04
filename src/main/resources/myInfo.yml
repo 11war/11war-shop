@@ -1,6 +1,9 @@
 db:
-  name: war11
-  user: war11
-  pw: war11
+  name: 11war
+  user: root
+  pw: 1111
   url: localhost
   port: 3306
+
+jwt:
+  key: NDkxOWJkYzRmNTU3N2RjMGMyZDFlZmM5NDMxODk3ZTUxYjdkZDNkOGZmNzU2YTJiMmQ0ZmNlNzVmYzE1MTRhZA==
