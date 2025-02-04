@@ -40,11 +40,8 @@ public class Order extends BaseTimeEntity {
   @Enumerated(EnumType.STRING)
   private OrderStatus status;
 
-  public Order(User user, Long discountedPrice, Long totalPrice, OrderStatus status) {
+  public Order(User user) {
     this.user = user;
-    this.discountedPrice = discountedPrice;
-    this.totalPrice = totalPrice;
-    this.status = status;
   }
 
   public OrderResponse toDto(List<OrderProduct> orderProducts) {
