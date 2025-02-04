@@ -1,5 +1,8 @@
 package com.war11.global.common;
 
+import com.war11.domain.user.dto.response.UserResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -28,4 +31,10 @@ public record ApiResponse<T>(boolean successOrFail, T data, String message) {
         return ResponseEntity.status(status)
             .body(new ApiResponse<>(false, null, message));
     }
+
+    public static <T> ResponseEntity<ApiResponse<Page<T>>> successPage (Page<T> pagination) {
+        return ResponseEntity.ok(new ApiResponse<>(true, pagination,null));
+    }
+
+
 }

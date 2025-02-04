@@ -32,4 +32,8 @@ public class CustomUserDetails implements UserDetails {
     public Long getId() {
         return user.getId(); // id를 반환
     }
+
+    public String getLoginId() {
+        return user.getLoginId();
+    }
 }
