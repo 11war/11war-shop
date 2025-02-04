@@ -11,7 +11,7 @@ import lombok.Builder;
 @Builder
 public record OrderResponse (
     User user,
-    List<OrderProduct> orderProducts,
+    List<OrderProductResponse> orderProducts,
     Long discountedPrice,
     Long totalPrice,
     OrderStatus orderStatus,

@@ -1,5 +1,6 @@
 package com.war11.domain.order.entity;
 
+import com.war11.domain.order.dto.response.OrderProductResponse;
 import com.war11.domain.order.dto.response.OrderResponse;
 import com.war11.domain.order.entity.enums.OrderStatus;
 import com.war11.domain.user.entity.User;
@@ -44,7 +45,7 @@ public class Order extends BaseTimeEntity {
     this.user = user;
   }
 
-  public OrderResponse toDto(List<OrderProduct> orderProducts) {
+  public OrderResponse toDto(List<OrderProductResponse> orderProducts) {
     return OrderResponse.builder()
         .user(user)
         .orderProducts(orderProducts)

@@ -1,6 +1,5 @@
 package com.war11.domain.order.service;
 
-import com.war11.domain.cart.dto.response.CartProductResponse;
 import com.war11.domain.cart.entity.Cart;
 import com.war11.domain.cart.entity.CartProduct;
 import com.war11.domain.cart.repository.CartProductRepository;
@@ -48,6 +47,6 @@ public class OrderService {
     List<OrderProductResponse> responses = orderProducts.stream()
         .map(OrderProduct::toDto).toList();
 
-    return order.toDto(orderProducts);
+    return order.toDto(responses);
   }
 }
