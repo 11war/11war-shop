@@ -35,21 +35,19 @@ class CartServiceTest {
   @Mock
   private UserRepository userRepository;
 
-  @Mock
-
   @InjectMocks
   private CartService cartService;
 
   private User user;
   private Product product1;
-  private Product product2;
+//  private Product product2;
 
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
     user = mock(User.class);
     product1 = mock(Product.class);
-    product2 = mock(Product.class);
+//    product2 = mock(Product.class);
   }
 
 
