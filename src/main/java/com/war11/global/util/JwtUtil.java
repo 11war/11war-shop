@@ -8,10 +8,15 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -20,6 +25,7 @@ public class JwtUtil {
 
     private static final long TOKEN_TIME = 60 * 60 * 1000L; //"${jwt.secret.key}")
     private static final String BEARER_PREFIX = "Bearer ";
+    public static final Set<String> EXPIRED_TOKEN_SET = new HashSet<>();
 
     @Value("${jwt.secret.key}")
     private String secretkey;
@@ -61,12 +67,13 @@ public class JwtUtil {
                 .signWith(key, signatureAlgorithm) // 비밀키와 알고리즘 유형 설정
                 .compact();
     }
+
     /*
     Token 앞에 있는 Bearer을 잘라내서 순수 토큰으로 return 하기 위한 메서드
     상수  BEARER_PREFIX 안 쓰려고 했는데 두 개나 쓰고 있길래 그냥 씀
      */
-    public String substringToken (String tokenValue) {
-        if(StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)){
+    public String substringToken(String tokenValue) {
+        if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
             return tokenValue.substring(7); // 7번째 인덱스부터 잘라
         }
         throw new BusinessException(ErrorCode.NOT_FOUND_TOKEN);
