@@ -45,16 +45,25 @@ public class Order extends BaseTimeEntity {
     this.user = user;
   }
 
-  public Order copyOf(Long newDiscountedPrice, List<OrderProduct> orderProducts) {
-    return Order.builder().user(this.user).discountedPrice(newDiscountedPrice).totalPrice(
-        orderProducts.stream()
-            .mapToLong(orderProduct -> orderProduct.getProductPrice() * orderProduct.getQuantity())
-            .sum()).status(OrderStatus.PAID).build();
+  public void updateOrderDetails(Long discountedPrice, List<OrderProduct> orderProducts) {
+    this.discountedPrice = discountedPrice;
+    this.totalPrice = orderProducts.stream()
+        .mapToLong(orderProduct -> orderProduct.getProductPrice() * orderProduct.getQuantity())
+        .sum();
+    this.status = OrderStatus.PAID;
   }
 
   public OrderResponse toDto(List<OrderProductResponse> orderProducts) {
     return OrderResponse.builder().user(user).orderProducts(orderProducts)
         .discountedPrice(discountedPrice).totalPrice(totalPrice).orderStatus(status)
         .createdAt(getCreatedAt()).updatedAt(getUpdatedAt()).build();
+  }
+
+  public void updateOrderStatus(OrderStatus newStatus) {
+    this.status = newStatus;
+  }
+
+  public void cancelOrder() {
+    this.status = OrderStatus.CANCELLED;
   }
 }

@@ -4,6 +4,9 @@ import com.war11.domain.cart.entity.Cart;
 import com.war11.domain.cart.entity.CartProduct;
 import com.war11.domain.cart.repository.CartProductRepository;
 import com.war11.domain.cart.repository.CartRepository;
+import com.war11.domain.order.dto.request.ChangeOrderStatusRequest;
+import com.war11.domain.order.dto.response.CancelOrderResponse;
+import com.war11.domain.order.dto.response.UpdateOrderResponse;
 import com.war11.domain.order.dto.response.GetAllOrdersResponse;
 import com.war11.domain.order.dto.response.OrderProductResponse;
 import com.war11.domain.order.dto.response.OrderResponse;
@@ -11,9 +14,9 @@ import com.war11.domain.order.entity.Order;
 import com.war11.domain.order.entity.OrderProduct;
 import com.war11.domain.order.repository.OrderProductRepository;
 import com.war11.domain.order.repository.OrderRepository;
-import com.war11.domain.product.repository.ProductRepository;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,14 +27,16 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OrderService {
 
-  private final ProductRepository productRepository;
   private final CartRepository cartRepository;
   private final CartProductRepository cartProductRepository;
   private final UserRepository userRepository;
   private final OrderRepository orderRepository;
   private final OrderProductRepository orderProductRepository;
 
+
+
   // Todo: userId는 토큰에서 받도록 수정, 주문 생성 시 상품에서 productQuantity 감소되도록 수정
+  @Transactional
   public OrderResponse createOrder(Long userId, Long discountPrice) {
     User foundUser = userRepository.findById(userId).orElseThrow();
     Order order = orderRepository.save(new Order(foundUser));
@@ -46,16 +51,16 @@ public class OrderService {
 
     orderProductRepository.saveAll(orderProducts);
 
-    List<OrderProductResponse> responses = orderProducts.stream()
+    List<OrderProductResponse> orderProductResponses = orderProducts.stream()
         .map(OrderProduct::toDto).toList();
 
-    orderRepository.save(order.copyOf(discountPrice, orderProducts));
+    order.updateOrderDetails(discountPrice, orderProducts);
 
-    return order.toDto(responses);
+    return order.toDto(orderProductResponses);
   }
 
   // Todo: 토큰에서 userId 뽑아오게 바꾸자
-  public List<GetAllOrdersResponse> getAllOrders (Long userId) {
+  public List<GetAllOrdersResponse> getAllOrder (Long userId) {
     List<Order> orders = orderRepository.findByUserId(userId);
 
     return orders.stream()
@@ -73,7 +78,7 @@ public class OrderService {
   }
 
   // Todo: 토큰에서 userId 뽑아오게 바꾸자
-  public OrderResponse getOrder(Long userId, Long orderId) {
+  public OrderResponse getOrder(Long orderId) {
     Order order = orderRepository.findById(orderId).orElseThrow();
     List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(orderId);
 
@@ -82,5 +87,22 @@ public class OrderService {
         .toList();
 
     return order.toDto(orderProductResponses);
+  }
+
+  @Transactional
+  public UpdateOrderResponse updateOrder(Long orderId, ChangeOrderStatusRequest request) {
+    Order order = orderRepository.findById(orderId).orElseThrow();
+    order.updateOrderStatus(request.orderStatus());
+
+    return new UpdateOrderResponse("배송 상태가 변경되었습니다.", order.getStatus());
+  }
+
+  // Todo: 주문 취소 시 상품 재고 반환하도록
+  @Transactional
+  public CancelOrderResponse cancelOrder(Long orderId) {
+    Order order = orderRepository.findById(orderId).orElseThrow();
+    order.cancelOrder();
+
+    return new CancelOrderResponse("주문이 취소되었습니다.", order.getStatus());
   }
 }
