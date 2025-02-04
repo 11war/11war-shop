@@ -8,7 +8,6 @@ import com.war11.domain.order.dto.response.OrderProductResponse;
 import com.war11.domain.order.dto.response.OrderResponse;
 import com.war11.domain.order.entity.Order;
 import com.war11.domain.order.entity.OrderProduct;
-import com.war11.domain.order.entity.enums.OrderStatus;
 import com.war11.domain.order.repository.OrderProductRepository;
 import com.war11.domain.order.repository.OrderRepository;
 import com.war11.domain.product.repository.ProductRepository;

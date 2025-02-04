@@ -1,7 +1,6 @@
 package com.war11.domain.order.dto.response;
 
 import com.war11.domain.order.entity.Order;
-import com.war11.domain.order.entity.OrderProduct;
 import com.war11.domain.order.entity.enums.OrderStatus;
 import com.war11.domain.user.entity.User;
 import java.time.LocalDateTime;
