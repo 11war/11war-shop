@@ -1,7 +1,6 @@
 package com.war11.domain.order.entity;
 
 import com.war11.domain.order.dto.response.OrderProductResponse;
-import com.war11.domain.product.entity.Product;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,9 +30,15 @@ public class OrderProduct {
     @Column(nullable = false)
     private Integer quantity;
 
+    public OrderProduct(Order order, String productName, Long productPrice, Integer quantity) {
+        this.order = order;
+        this.productName = productName;
+        this.productPrice = productPrice;
+        this.quantity = quantity;
+    }
+
     public OrderProductResponse toDto() {
         return OrderProductResponse.builder()
-            .order(order)
             .productName(productName)
             .productPrice(productPrice)
             .quantity(quantity)
