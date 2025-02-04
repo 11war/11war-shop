@@ -1,7 +1,11 @@
 package com.war11.global.config;
 
+import static com.war11.global.util.JwtUtil.EXPIRED_TOKEN_SET;
+
 import com.war11.domain.auth.service.CustomUserDetailsService;
 import com.war11.global.util.JwtUtil;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -54,9 +58,42 @@ public class SecurityConfig {
 
         http
             .authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/", "/auth/signup", "/auth/signin").permitAll() // 화이트리스트
+                .requestMatchers("/", "/auth/signup", "/auth/signin","/logout").permitAll() // 화이트리스트
                 .requestMatchers("/admin").hasRole("ADMIN") // 관리자 경로 권한 설정
                 .anyRequest().authenticated()); // 나머지 요청은 인증 필요
+
+        http
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .addLogoutHandler((request, response, authentication) -> {
+                    String token = jwtUtil.substringToken(request.getHeader("Authorization"));
+
+                    if (token != null && EXPIRED_TOKEN_SET.contains(token)) {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setCharacterEncoding("UTF-8");
+                        try {
+                            response.getWriter().write("이미 로그아웃된 토큰입니다.");
+                            return;
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                    if (token != null) {
+                        EXPIRED_TOKEN_SET.add(token);
+                    }
+                })
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    if (response.getStatus() == HttpServletResponse.SC_UNAUTHORIZED) {
+                        return;
+                    }
+
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write("로그아웃이 성공했습니다.");
+                })
+            );
+
 
         http
             .addFilterAt(new JwtFilter(jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class);
