@@ -1,11 +1,14 @@
 package com.war11.domain.order.controller;
 
+import com.war11.domain.order.dto.response.GetAllOrdersResponse;
 import com.war11.domain.order.dto.response.OrderResponse;
 import com.war11.domain.order.service.OrderService;
 import com.war11.global.common.ApiResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,4 +30,11 @@ public class OrderController {
     return ApiResponse.success(response);
   }
 
+  @GetMapping("/users/{userId}")
+  public ResponseEntity<ApiResponse<List<GetAllOrdersResponse>>> getAllOrdersApi(
+      @PathVariable Long userId) {
+    List<GetAllOrdersResponse> responses = orderService.getAllOrders(userId);
+
+    return ApiResponse.success(responses);
+  }
 }

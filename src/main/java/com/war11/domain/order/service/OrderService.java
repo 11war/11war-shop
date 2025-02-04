@@ -4,6 +4,7 @@ import com.war11.domain.cart.entity.Cart;
 import com.war11.domain.cart.entity.CartProduct;
 import com.war11.domain.cart.repository.CartProductRepository;
 import com.war11.domain.cart.repository.CartRepository;
+import com.war11.domain.order.dto.response.GetAllOrdersResponse;
 import com.war11.domain.order.dto.response.OrderProductResponse;
 import com.war11.domain.order.dto.response.OrderResponse;
 import com.war11.domain.order.entity.Order;
@@ -51,5 +52,22 @@ public class OrderService {
     orderRepository.save(order.copyOf(discountPrice, orderProducts));
 
     return order.toDto(responses);
+  }
+
+  public List<GetAllOrdersResponse> getAllOrders (Long userId) {
+    List<Order> orders = orderRepository.findByUserId(userId);
+
+    return orders.stream()
+        .map(order -> {
+          List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(order.getId());
+          return GetAllOrdersResponse.builder()
+              .productNames(orderProducts.stream()
+                  .map(OrderProduct::getProductName)
+                  .toList())
+              .totalPrice(order.getTotalPrice())
+              .orderStatus(order.getStatus())
+              .build();
+        })
+        .toList();
   }
 }
