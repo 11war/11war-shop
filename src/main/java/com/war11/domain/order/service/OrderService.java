@@ -40,7 +40,6 @@ public class OrderService {
   @Transactional
   public OrderResponse createOrder(Long userId, Long discountPrice) {
     User foundUser = userRepository.findById(userId).orElseThrow();
-    Order order = orderRepository.save(new Order(foundUser));
     Cart foundCart = cartRepository.findCartByUserId(userId).orElseThrow();
 
     List<CartProduct> cartProducts = cartProductRepository.findCartProductByCartIdAndIsChecked(
@@ -49,6 +48,8 @@ public class OrderService {
     cartProducts.forEach(cartProduct -> {
       cartProduct.getProduct().downToQuantity(cartProduct.getQuantity());
     });
+
+    Order order = orderRepository.save(new Order(foundUser));
 
     List<OrderProduct> orderProducts = cartProducts.stream()
         .map(cartProduct -> new OrderProduct(order, cartProduct.getProduct().getId(),
