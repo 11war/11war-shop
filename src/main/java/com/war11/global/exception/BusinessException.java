@@ -1,4 +1,4 @@
-package com.war11.global.exception.base;
+package com.war11.global.exception;
 
 import com.war11.global.exception.enums.ErrorCode;
 import lombok.Getter;
