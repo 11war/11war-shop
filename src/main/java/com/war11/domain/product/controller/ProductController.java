@@ -1,9 +1,11 @@
 package com.war11.domain.product.controller;
 
+import com.war11.domain.product.dto.request.ProductAutoCompletingRequest;
 import com.war11.domain.product.dto.request.ProductFindRequest;
 import com.war11.domain.product.dto.request.ProductRequest;
 import com.war11.domain.product.dto.request.ProductUpdateRequest;
 import com.war11.domain.product.dto.response.ProductResponse;
+import com.war11.domain.product.entity.Keyword;
 import com.war11.domain.product.service.ProductService;
 import com.war11.global.common.ApiResponse;
 import jakarta.validation.Valid;
@@ -54,7 +56,13 @@ public class ProductController {
   }
 
   @GetMapping
-  public Page<ProductResponse> findByProductName(@Valid ProductFindRequest productFindRequest) {
-    return productService.findByProductName(productFindRequest);
+  public ResponseEntity<ApiResponse<Page<ProductResponse>>> findByProductName(@Valid ProductFindRequest productFindRequest) {
+    return ApiResponse.success(productService.findByProductName(productFindRequest));
   }
+
+  @GetMapping("/auto_completing")
+  public ResponseEntity<ApiResponse<Page<Keyword>>> findByAutoCompleting( ProductAutoCompletingRequest productAutoCompletingRequest) {
+    return ApiResponse.success(productService.findByAutoCompleting(productAutoCompletingRequest));
+  }
+
 }

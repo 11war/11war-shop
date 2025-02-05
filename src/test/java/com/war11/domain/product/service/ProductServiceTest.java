@@ -58,8 +58,7 @@ public class ProductServiceTest {
         product.getName(),
         product.getCategory(),
         product.getPrice(),
-        product.getQuantity(),
-        product.getStatus());
+        product.getQuantity());
 
 
     when(productRepository.save(any(Product.class))).thenReturn(product);
@@ -91,6 +90,7 @@ public class ProductServiceTest {
 
 
     when(productRepository.findById(any(Long.class))).thenReturn(Optional.of(product));
+    when(productRepository.findByIdForUpdate(any(Long.class))).thenReturn(product);
 
     //when
     ProductResponse actualResult = productService.updateProduct(productUpdateRequest);
@@ -113,6 +113,7 @@ public class ProductServiceTest {
     ReflectionUtils.setField(id,product,1L);
 
     when(productRepository.findById(any(Long.class))).thenReturn(Optional.ofNullable(product));
+    when(productRepository.findByIdForUpdate(any(Long.class))).thenReturn(product);
 
 
     //when
@@ -123,5 +124,6 @@ public class ProductServiceTest {
         .isEqualTo(true);
     verify(productRepository, times(1)).findById(any());
   }
+
 
 }

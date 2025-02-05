@@ -1,10 +1,13 @@
 package com.war11.domain.product.service;
 
+import com.war11.domain.product.dto.request.ProductAutoCompletingRequest;
 import com.war11.domain.product.dto.request.ProductFindRequest;
 import com.war11.domain.product.dto.request.ProductRequest;
 import com.war11.domain.product.dto.request.ProductUpdateRequest;
 import com.war11.domain.product.dto.response.ProductResponse;
+import com.war11.domain.product.entity.Keyword;
 import com.war11.domain.product.entity.Product;
+import com.war11.domain.product.repository.KeywordRepository;
 import com.war11.domain.product.repository.ProductRepository;
 import com.war11.global.exception.BusinessException;
 import com.war11.global.exception.enums.ErrorCode;
@@ -20,9 +23,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ProductService {
-  private final ProductRepository productRepository;
 
-  public ProductResponse createProduct(ProductRequest productRequest){
+  private final ProductRepository productRepository;
+  private final KeywordRepository keywordRepository;
+
+  public ProductResponse createProduct(ProductRequest productRequest) {
 
     Product resultProduct = productRepository.save(productRequest.toEntity(productRequest));
     return resultProduct.toDto(resultProduct);
@@ -51,27 +56,47 @@ public class ProductService {
     return result.toDto(result);
   }
 
-   private Product productValidationById(Long productId){
-     return productRepository.findById(productId).
-         orElseThrow (() ->
-             new BusinessException(ErrorCode.NOT_FOUND_PRODUCT_ID));
-   }
+  private Product productValidationById(Long productId) {
+    return productRepository.findById(productId).
+        orElseThrow(() ->
+            new BusinessException(ErrorCode.NOT_FOUND_PRODUCT_ID));
+  }
 
-   public Page<ProductResponse> findByProductName(ProductFindRequest productFindRequest) {
+  @Transactional
+  public Page<ProductResponse> findByProductName(ProductFindRequest productFindRequest) {
 
-      Order order;
-      if(productFindRequest.getOrder().equals("asc")){
-        order = Sort.Order.asc("updatedAt");
-      }else {
-        order = Sort.Order.desc("updatedAt");
-      }
+    Order order;
+    if (productFindRequest.getOrder().equals("asc")) {
+      order = Sort.Order.asc("updatedAt");
+    } else {
+      order = Sort.Order.desc("updatedAt");
+    }
 
-     Pageable pageable = PageRequest.of(
-         productFindRequest.getPage() - 1,
-         productFindRequest.getSize(),
-         Sort.by(order));
+    Pageable pageable = PageRequest.of(
+        productFindRequest.getPage() - 1,
+        productFindRequest.getSize(),
+        Sort.by(order));
 
-      return productRepository.findByProductName(productFindRequest,pageable);
-   }
+    if (keywordRepository.existsById(productFindRequest.getName())) {
+      Keyword keyword = keywordRepository.findById(productFindRequest.getName()).orElseThrow(()
+          -> new BusinessException(ErrorCode.NOT_FOUND_KEYWORD_ID));
+      keyword.incrementCount();
+    } else {
+      keywordRepository.save(new Keyword(productFindRequest.getName(), 1L));
+    }
 
-   }
+    return productRepository.findByProductName(productFindRequest, pageable);
+  }
+
+  public Page<Keyword> findByAutoCompleting(ProductAutoCompletingRequest productAutoCompletingRequest) {
+    Order order = Sort.Order.desc("count");
+
+    Pageable pageable = PageRequest.of(
+        productAutoCompletingRequest.getPage() - 1,
+        productAutoCompletingRequest.getSize(),
+        Sort.by(order));
+
+    return keywordRepository.findByKeywordContaining(productAutoCompletingRequest.getKeyword(),pageable);
+  }
+
+}

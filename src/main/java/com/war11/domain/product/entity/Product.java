@@ -5,6 +5,7 @@ import com.war11.domain.product.dto.response.ProductResponse;
 import com.war11.domain.product.entity.enums.ProductStatus;
 import com.war11.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,6 +30,7 @@ public class Product extends BaseTimeEntity {
 
     private Long price;
 
+    @Min( value = 0, message = "개수가 0보다 작을수 없습니다.")
     private Integer quantity;
 
     @Enumerated(EnumType.STRING)
@@ -67,11 +69,12 @@ public class Product extends BaseTimeEntity {
         this.isDeleted=true;
     }
 
-    public void upToQuantity(int upQuantity){
+    public void increaseQuantity(int upQuantity){
     this.quantity = quantity + upQuantity;
     }
 
-    public void downToQuantity(int downQuantity){
+
+    public void decreaseQuantity(int downQuantity){
     this.quantity = quantity - downQuantity;
     }
 }
