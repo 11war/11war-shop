@@ -1,5 +1,6 @@
 package com.war11.domain.coupon.service;
 
+import com.war11.domain.coupon.annotation.Lock;
 import com.war11.domain.coupon.dto.request.CouponTemplateRequest;
 import com.war11.domain.coupon.dto.request.CouponTemplateUpdateRequest;
 import com.war11.domain.coupon.dto.response.CouponResponse;
@@ -55,12 +56,21 @@ public class CouponService {
     }
   }
 
-  @Transactional
+  @Lock
   public CouponResponse issueCoupon(Long couponTemplateId,Long userId) {
     CouponTemplate couponTemplate = findCouponTemplateById(couponTemplateId);
     User user = userRepository.findById(userId).orElseThrow();
+    validateCouponDuplicate(couponTemplateId, userId);
     Coupon coupon = couponTemplate.issueCoupon(user);
     return couponRepository.save(coupon).toDto();
+  }
+
+  private void validateCouponDuplicate(Long couponTemplateId, Long userId) {
+    boolean couponInfo = couponRepository.existsByCouponTemplateIdAndUserId(couponTemplateId,
+        userId);
+    if(couponInfo) {
+      throw new IllegalStateException("이미 발급된 쿠폰입니다.");
+    }
   }
 
   @Transactional

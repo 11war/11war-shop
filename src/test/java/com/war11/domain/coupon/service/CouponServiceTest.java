@@ -54,7 +54,7 @@ class CouponServiceTest {
   List<CouponTemplate> couponTemplates;
   List<Coupon> coupons;
   @BeforeEach
-  void setup() {
+  void init() {
     long couponTemplateId = 1L;
     couponTemplates = new ArrayList<>(Arrays.asList(
         CouponTemplate.builder()

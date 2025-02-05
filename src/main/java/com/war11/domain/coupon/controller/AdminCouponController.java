@@ -6,9 +6,11 @@ import com.war11.domain.coupon.dto.response.CouponResponse;
 import com.war11.domain.coupon.dto.response.CouponTemplateResponse;
 import com.war11.domain.coupon.service.CouponService;
 import com.war11.global.common.ApiResponse;
+import com.war11.global.config.CustomUserDetails;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,7 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -56,8 +57,8 @@ public class AdminCouponController {
   }
 
   @PostMapping("/{id}/issue")
-  public ResponseEntity<ApiResponse<CouponResponse>> issueCoupon(@PathVariable Long id, @RequestParam Long userId) {
-    CouponResponse coupon = couponService.issueCoupon(id, userId);
+  public ResponseEntity<ApiResponse<CouponResponse>> issueCoupon(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    CouponResponse coupon = couponService.issueCoupon(id, userDetails.getId());
     return ApiResponse.created(coupon);
   }
 }
