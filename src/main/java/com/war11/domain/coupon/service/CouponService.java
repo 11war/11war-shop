@@ -9,15 +9,23 @@ import com.war11.domain.coupon.entity.Coupon;
 import com.war11.domain.coupon.entity.CouponTemplate;
 import com.war11.domain.coupon.repository.CouponRepository;
 import com.war11.domain.coupon.repository.CouponTemplateRepository;
+import com.war11.domain.lock.service.LockService;
 import com.war11.domain.order.entity.Order;
 import com.war11.domain.order.repository.OrderRepository;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +34,35 @@ public class CouponService {
   private final CouponTemplateRepository couponTemplateRepository;
   private final OrderRepository orderRepository;
   private final UserRepository userRepository;
+  private final LockService<CouponTemplate> lockService;
+
+  private final RedissonClient redissonClient;
+  private final RedisTemplate<String, String> redisTemplate;
+  private static final String COUNT_KEY_PREFIX = "coupon:count:";
+  private static final String USER_KEY_PREFIX = "coupon:users:";
+  private static final String LOCK_KEY_PREFIX = "coupon:lock:";
+  private static final long WAIT_TIME = 3L;
+  private static final long LEASE_TIME = 5L; // 락 임대 시간
+
+  @PostConstruct
+  public void initializeCouponCount() {
+    List<CouponTemplate> templates = couponTemplateRepository.findAll();
+    for (CouponTemplate template : templates) {
+      String countKey = COUNT_KEY_PREFIX + template.getId();
+      String userKey = USER_KEY_PREFIX + template.getId();
+
+      // 수량 초기화
+      redisTemplate.opsForValue()
+          .setIfAbsent(countKey, String.valueOf(template.getQuantity()));
+
+      // 만료 시간 설정
+      if (template.getEndDate() != null) {
+        Instant endInstant = template.getEndDate().atZone(ZoneId.systemDefault()).toInstant();
+        redisTemplate.expireAt(countKey, endInstant);
+        redisTemplate.expireAt(userKey, endInstant);
+      }
+    }
+  }
 
   public CouponTemplateResponse generateCouponTemplate(CouponTemplateRequest couponTemplateRequest) {
     CouponTemplate couponTemplate = couponTemplateRequest.toEntity();
@@ -63,6 +100,66 @@ public class CouponService {
     validateCouponDuplicate(couponTemplateId, userId);
     Coupon coupon = couponTemplate.issueCoupon(user);
     return couponRepository.save(coupon).toDto();
+  }
+
+  @Transactional
+  public CouponResponse issueCouponWithLargeScale(Long couponTemplateId, Long userId) {
+    RLock lock = redissonClient.getLock(LOCK_KEY_PREFIX + couponTemplateId);
+    CouponTemplate couponTemplate = findCouponTemplateById(couponTemplateId);
+    User user = userRepository.findById(userId).orElseThrow();
+    validateCouponDuplicate(couponTemplateId, userId);
+    try {
+      boolean isLocked = lock.tryLock(WAIT_TIME, LEASE_TIME, TimeUnit.SECONDS);
+
+      if (!isLocked) {
+        throw new RuntimeException("쿠폰 발급 대기 시간 초과");
+      }
+
+      try {
+        String countKey = COUNT_KEY_PREFIX + couponTemplateId;
+        Long remainingCount = redisTemplate.opsForValue().decrement(countKey);
+
+        if (remainingCount < 0) {// 수량이 부족한 경우 롤백
+          redisTemplate.opsForValue().increment(countKey);
+          throw new RuntimeException("모든 쿠폰 수량 소진");
+        }
+        Coupon coupon = couponTemplate.issueCoupon(user);
+        return couponRepository.save(coupon).toDto();
+
+      } finally {
+        if (lock.isLocked() && lock.isHeldByCurrentThread()) {
+          lock.unlock();
+        }
+      }
+    } catch (InterruptedException e) {
+      throw new RuntimeException("쿠폰 발급 오류가 발생", e);
+    }
+  }
+
+  @Transactional
+  public CouponResponse issueCouponWithLettuce(Long couponTemplateId, Long userId) {
+    String lockKey = String.valueOf(couponTemplateId);
+    CouponTemplate couponTemplate = findCouponTemplateById(couponTemplateId);
+    User user = userRepository.findById(userId).orElseThrow();
+    validateCouponDuplicate(couponTemplateId, userId);
+
+    try {
+      lockService.lock(lockKey);
+
+      String countKey = COUNT_KEY_PREFIX + couponTemplateId;
+      Long remainingCount = redisTemplate.opsForValue().decrement(countKey);
+
+      if (remainingCount < 0) {
+        redisTemplate.opsForValue().increment(countKey);
+        throw new RuntimeException("모든 쿠폰 수량 소진");
+      }
+
+      Coupon coupon = couponTemplate.issueCoupon(user);
+      return couponRepository.save(coupon).toDto();
+
+    } finally {
+      lockService.unlock(lockKey);
+    }
   }
 
   private void validateCouponDuplicate(Long couponTemplateId, Long userId) {
