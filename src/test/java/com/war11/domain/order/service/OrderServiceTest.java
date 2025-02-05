@@ -154,4 +154,46 @@ class OrderServiceTest {
     verify(orderProductRepository).findByOrderId(401L);
     verify(orderProductRepository).findByOrderId(402L);
   }
+
+  @Test
+  void 주문_단건_조회_성공() {
+//    // given
+//    Order order1 = new Order(user);
+//    order1.updateOrderDetails(1000L, List.of(orderProduct1, orderProduct2));
+//    when(orderRepository.findById(401L)).thenReturn(Optional.of(order1));
+////    when(order1.getTotalPrice()).thenReturn(13000L);
+////    when(order1.getStatus()).thenReturn(OrderStatus.PAID);
+//
+//    when(orderProduct1.getProductPrice()).thenReturn(5000L);
+//    when(orderProduct1.getQuantity()).thenReturn(2);
+//
+//    when(orderProduct2.getProductPrice()).thenReturn(3000L);
+//    when(orderProduct2.getQuantity()).thenReturn(1);
+//
+//    when(orderProductRepository.findByOrderId(401L)).thenReturn(
+//        List.of(orderProduct1, orderProduct2));
+//
+//    // when
+//    OrderResponse response = orderService.getOrder(401L);
+//
+//    // then
+//    assertThat(response).isNotNull();
+//    assertThat(response.totalPrice()).isEqualTo(13000L);
+//    assertThat(response.discountedPrice()).isEqualTo(1000L);
+//    assertThat(response.resultPrice()).isEqualTo(12000L);
+//    assertThat(response.orderStatus()).isEqualTo(OrderStatus.PAID);
+//    assertThat(response.orderProducts()).hasSize(2);
+//
+//    assertThat(response.orderProducts().get(0).productName()).isEqualTo("상품 A");
+//    assertThat(response.orderProducts().get(0).productPrice()).isEqualTo(5000L);
+//    assertThat(response.orderProducts().get(0).quantity()).isEqualTo(1);
+//
+//    assertThat(response.orderProducts().get(1).productName()).isEqualTo("상품 B");
+//    assertThat(response.orderProducts().get(1).productPrice()).isEqualTo(3000L);
+//    assertThat(response.orderProducts().get(1).quantity()).isEqualTo(2);
+//
+//    verify(orderRepository).findById(401L);
+//    verify(orderProductRepository).findByOrderId(401L);
+  }
+
 }
