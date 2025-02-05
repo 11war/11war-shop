@@ -26,4 +26,13 @@ public class MyInfoConfig {
 
     @Value("${db.pw}")
     private String pw;
+
+    @Value("${redis.host}")
+    private String redisHost;
+
+    @Value("${redis.port}")
+    private String redisPort;
+
+    @Value("${redis.database}")
+    private String redisDb;
 }

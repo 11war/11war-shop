@@ -67,4 +67,10 @@ public class AdminCouponController {
     CouponResponse coupon = couponService.issueCouponWithLargeScale(id, userDetails.getId());
     return ApiResponse.created(coupon);
   }
+
+  @PostMapping("/{id}/issue-for-large-scale-with-lettuce")
+  public ResponseEntity<ApiResponse<CouponResponse>> issueCouponForLargeScaleWithLettuce(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    CouponResponse coupon = couponService.issueCouponWithLettuce(id, userDetails.getId());
+    return ApiResponse.created(coupon);
+  }
 }
