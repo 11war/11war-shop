@@ -50,7 +50,7 @@ public class OrderService {
       cartProduct.getProduct().downToQuantity(cartProduct.getQuantity());
     });
 
-    Order order = orderRepository.save(new Order(foundUser));
+    Order order = new Order(foundUser);
 
     List<OrderProduct> orderProducts = cartProducts.stream()
         .map(cartProduct -> new OrderProduct(order, cartProduct.getProduct().getId(),
@@ -63,8 +63,16 @@ public class OrderService {
         .map(OrderProduct::toDto).toList();
 
     order.updateOrderDetails(discountPrice, orderProducts);
+    orderRepository.save(order);
+    OrderResponse response = order.toDto(orderProductResponses);
 
-    return order.toDto(orderProductResponses);
+    cartProductRepository.deleteAll(cartProducts);
+
+    if (cartProductRepository.findCartProductByCartId(foundCart.getId()).isEmpty()) {
+      cartRepository.delete(foundCart);
+    }
+
+    return response;
   }
 
   public List<GetAllOrdersResponse> getAllOrder(Long userId) {
