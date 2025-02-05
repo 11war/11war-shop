@@ -11,8 +11,9 @@ import lombok.Builder;
 public record OrderResponse (
     User user,
     List<OrderProductResponse> orderProducts,
-    Long discountedPrice,
     Long totalPrice,
+    Long discountedPrice,
+    Long resultPrice,
     OrderStatus orderStatus,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
@@ -22,8 +23,8 @@ public record OrderResponse (
   public Order toEntity() {
     return Order.builder()
         .user(user)
-        .discountedPrice(discountedPrice)
         .totalPrice(totalPrice)
+        .discountedPrice(discountedPrice)
         .status(orderStatus)
         .build();
   }

@@ -55,7 +55,8 @@ public class Order extends BaseTimeEntity {
 
   public OrderResponse toDto(List<OrderProductResponse> orderProducts) {
     return OrderResponse.builder().user(user).orderProducts(orderProducts)
-        .discountedPrice(discountedPrice).totalPrice(totalPrice).orderStatus(status)
+        .totalPrice(totalPrice).discountedPrice(discountedPrice)
+        .resultPrice(totalPrice - discountedPrice).orderStatus(status)
         .createdAt(getCreatedAt()).updatedAt(getUpdatedAt()).build();
   }
 
