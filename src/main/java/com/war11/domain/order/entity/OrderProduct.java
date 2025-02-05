@@ -22,6 +22,9 @@ public class OrderProduct {
     private Order order;
 
     @Column(nullable = false)
+    private Long productId;
+
+    @Column(nullable = false)
     private String productName;
 
     @Column(nullable = false)
@@ -30,7 +33,8 @@ public class OrderProduct {
     @Column(nullable = false)
     private Integer quantity;
 
-    public OrderProduct(Order order, String productName, Long productPrice, Integer quantity) {
+    public OrderProduct(Order order, Long productId, String productName, Long productPrice, Integer quantity) {
+        this.productId = productId;
         this.order = order;
         this.productName = productName;
         this.productPrice = productPrice;

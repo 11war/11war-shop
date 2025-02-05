@@ -14,6 +14,8 @@ import com.war11.domain.order.entity.Order;
 import com.war11.domain.order.entity.OrderProduct;
 import com.war11.domain.order.repository.OrderProductRepository;
 import com.war11.domain.order.repository.OrderRepository;
+import com.war11.domain.product.entity.Product;
+import com.war11.domain.product.repository.ProductRepository;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -32,10 +34,9 @@ public class OrderService {
   private final UserRepository userRepository;
   private final OrderRepository orderRepository;
   private final OrderProductRepository orderProductRepository;
+  private final ProductRepository productRepository;
 
 
-
-  // Todo: userId는 토큰에서 받도록 수정, 주문 생성 시 상품에서 productQuantity 감소되도록 수정
   @Transactional
   public OrderResponse createOrder(Long userId, Long discountPrice) {
     User foundUser = userRepository.findById(userId).orElseThrow();
@@ -45,9 +46,14 @@ public class OrderService {
     List<CartProduct> cartProducts = cartProductRepository.findCartProductByCartIdAndIsChecked(
         foundCart.getId(), true);
 
+    cartProducts.forEach(cartProduct -> {
+      cartProduct.getProduct().downToQuantity(cartProduct.getQuantity());
+    });
+
     List<OrderProduct> orderProducts = cartProducts.stream()
-        .map(cartProduct -> new OrderProduct(order, cartProduct.getProduct().getName(),
-            cartProduct.getProduct().getPrice(), cartProduct.getQuantity())).toList();
+        .map(cartProduct -> new OrderProduct(order, cartProduct.getProduct().getId(),
+            cartProduct.getProduct().getName(), cartProduct.getProduct().getPrice(),
+            cartProduct.getQuantity())).toList();
 
     orderProductRepository.saveAll(orderProducts);
 
@@ -59,8 +65,7 @@ public class OrderService {
     return order.toDto(orderProductResponses);
   }
 
-  // Todo: 토큰에서 userId 뽑아오게 바꾸자
-  public List<GetAllOrdersResponse> getAllOrder (Long userId) {
+  public List<GetAllOrdersResponse> getAllOrder(Long userId) {
     List<Order> orders = orderRepository.findByUserId(userId);
 
     return orders.stream()
@@ -77,7 +82,6 @@ public class OrderService {
         .toList();
   }
 
-  // Todo: 토큰에서 userId 뽑아오게 바꾸자
   public OrderResponse getOrder(Long orderId) {
     Order order = orderRepository.findById(orderId).orElseThrow();
     List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(orderId);
@@ -102,6 +106,12 @@ public class OrderService {
   public CancelOrderResponse cancelOrder(Long orderId) {
     Order order = orderRepository.findById(orderId).orElseThrow();
     order.cancelOrder();
+
+    List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(orderId);
+    orderProducts.forEach(orderProduct -> {
+      Product foundProduct = productRepository.findById(orderProduct.getProductId()).orElseThrow();
+      foundProduct.upToQuantity(orderProduct.getQuantity());
+    });
 
     return new CancelOrderResponse("주문이 취소되었습니다.", order.getStatus());
   }
