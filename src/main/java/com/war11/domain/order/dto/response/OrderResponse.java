@@ -9,7 +9,6 @@ import lombok.Builder;
 
 @Builder
 public record OrderResponse (
-    User user,
     List<OrderProductResponse> orderProducts,
     Long totalPrice,
     Long discountedPrice,
@@ -22,7 +21,6 @@ public record OrderResponse (
 
   public Order toEntity() {
     return Order.builder()
-        .user(user)
         .totalPrice(totalPrice)
         .discountedPrice(discountedPrice)
         .status(orderStatus)
