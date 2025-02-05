@@ -54,7 +54,6 @@ class OrderServiceTest {
   private OrderProduct orderProduct1;
   private OrderProduct orderProduct2;
   private OrderProduct orderProduct3;
-  private OrderProduct orderProduct4;
 
   @BeforeEach
   void setUp() {
@@ -76,13 +75,11 @@ class OrderServiceTest {
     orderProduct1 = mock(OrderProduct.class);
     orderProduct2 = mock(OrderProduct.class);
     orderProduct3 = mock(OrderProduct.class);
-    orderProduct4 = mock(OrderProduct.class);
   }
 
   @Test
   void 주문_생성_성공() {
     // given: 유저, 장바구니, 상품 설정
-
     when(product1.getId()).thenReturn(301L);
     when(product1.getPrice()).thenReturn(5000L);
     when(product2.getId()).thenReturn(302L);
@@ -108,26 +105,22 @@ class OrderServiceTest {
     // when
     OrderResponse response = orderService.createOrder(101L, 1000L);
 
-    // then
+    // then: 반환값인 response 내부 값 검증, 메서드 호출 검증, 재고 감소 확인
     assertThat(response.user()).isEqualTo(user);
     assertThat(response.orderProducts()).hasSize(2);
     assertThat(response.resultPrice()).isEqualTo(5000L * 2 + 3000L - 1000L);
     assertThat(response.orderStatus()).isNotNull();
 
-    // 주문 저장 검증
     verify(orderRepository).save(any());
     verify(orderProductRepository).saveAll(any());
 
-    // 재고 감소 확인
     verify(product1).downToQuantity(2);
     verify(product2).downToQuantity(1);
   }
 
   @Test
   void 모든_주문_조회_성공() {
-    // given: 유저 ID 설정
-
-    // 주문 상품 정보 설정
+    // given: 주문 상품 정보 설정
     when(order1.getTotalPrice()).thenReturn(12000L);
     when(order1.getStatus()).thenReturn(OrderStatus.PAID);
     when(orderProductRepository.findByOrderId(401L)).thenReturn(List.of(orderProduct1, orderProduct2));
@@ -139,13 +132,12 @@ class OrderServiceTest {
     when(orderProductRepository.findByOrderId(402L)).thenReturn(List.of(orderProduct3));
     when(orderProduct3.getProductName()).thenReturn("상품 C");
 
-    // 유저 ID로 주문 목록 조회 설정
     when(orderRepository.findByUserId(101L)).thenReturn(List.of(order1, order2));
 
-    // when: getAllOrder 호출
+    // when
     List<GetAllOrdersResponse> responses = orderService.getAllOrder(101L);
 
-    // then: 응답값 검증
+    // then: 반환값인 responses 사이즈와 내부 값 검증, 메서드 호출 검증
     assertThat(responses).hasSize(2);
 
     GetAllOrdersResponse response1 = responses.get(0);
@@ -158,7 +150,6 @@ class OrderServiceTest {
     assertThat(response2.totalPrice()).isEqualTo(5000L);
     assertThat(response2.orderStatus()).isEqualTo(OrderStatus.CANCELLED);
 
-    // 레포지토리 호출 검증
     verify(orderRepository).findByUserId(101L);
     verify(orderProductRepository).findByOrderId(401L);
     verify(orderProductRepository).findByOrderId(402L);
