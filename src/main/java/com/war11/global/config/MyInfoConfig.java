@@ -26,4 +26,5 @@ public class MyInfoConfig {
 
     @Value("${db.pw}")
     private String pw;
+
 }

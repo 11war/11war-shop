@@ -18,3 +18,9 @@ jwt:
     key: ${jwt.key}
 
 
+
+data:
+  redis:
+    password: ${redis.password}
+    host: ${redis.host}
+    port: ${redis.port}
