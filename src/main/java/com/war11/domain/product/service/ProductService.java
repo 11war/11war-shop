@@ -17,6 +17,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,7 @@ public class ProductService {
 
   private final ProductRepository productRepository;
   private final KeywordRepository keywordRepository;
+
 
   public ProductResponse createProduct(ProductRequest productRequest) {
 
@@ -96,7 +99,7 @@ public class ProductService {
         productAutoCompletingRequest.getSize(),
         Sort.by(order));
 
-    return keywordRepository.findByKeywordContaining(productAutoCompletingRequest.getKeyword(),pageable);
+    return keywordRepository.findByKeywordStartingWith(productAutoCompletingRequest.getKeyword(),pageable);
   }
 
 }
