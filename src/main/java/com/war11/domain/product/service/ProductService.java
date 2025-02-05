@@ -28,6 +28,7 @@ public class ProductService {
 
   private final ProductRepository productRepository;
   private final KeywordRepository keywordRepository;
+  private final RedisTemplate<String,String> redisTemplate;
 
 
   public ProductResponse createProduct(ProductRequest productRequest) {
