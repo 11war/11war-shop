@@ -45,7 +45,7 @@ public class AdminCouponController {
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<ApiResponse<Void>> updateCouponTemplate(@PathVariable Long id, CouponTemplateUpdateRequest request) {
+  public ResponseEntity<ApiResponse<Void>> updateCouponTemplate(@PathVariable Long id, @RequestBody CouponTemplateUpdateRequest request) {
     couponService.editCouponTemplate(id, request);
     return ApiResponse.noContent();
   }
@@ -59,6 +59,12 @@ public class AdminCouponController {
   @PostMapping("/{id}/issue")
   public ResponseEntity<ApiResponse<CouponResponse>> issueCoupon(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
     CouponResponse coupon = couponService.issueCoupon(id, userDetails.getId());
+    return ApiResponse.created(coupon);
+  }
+
+  @PostMapping("/{id}/issue-for-large-scale")
+  public ResponseEntity<ApiResponse<CouponResponse>> issueCouponForLargeScale(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    CouponResponse coupon = couponService.issueCouponWithLargeScale(id, userDetails.getId());
     return ApiResponse.created(coupon);
   }
 }
