@@ -8,6 +8,8 @@ import com.war11.domain.coupon.repository.CouponTemplateRepository;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,6 +39,8 @@ public class CouponIssueTest {
 
   private CouponTemplate couponTemplate;
   private User user;
+  private User user1;
+  private User user2;
 
   @BeforeEach
   void init() {
@@ -46,6 +50,18 @@ public class CouponIssueTest {
         .password("userPw")
         .build();
     userRepository.save(user);
+    user1 = User.builder()
+        .loginId("userId1")
+        .name("userName1")
+        .password("userPw1")
+        .build();
+    userRepository.save(user1);
+    user2 = User.builder()
+        .loginId("userId2")
+        .name("userName2")
+        .password("userPw2")
+        .build();
+    userRepository.save(user2);
     couponTemplate = CouponTemplate.builder()
         .name("name")
         .value(1000)
@@ -84,6 +100,35 @@ public class CouponIssueTest {
     // then
     assertEquals(1,successCount.get());
     assertEquals(threadCount-1,failCount.get());
+  }
+
+  @Test
+  @DisplayName("여러명의 사용자가 동시에 쿠폰 발급 요청")
+  void 여러_사용자가_동시에_쿠폰_발급() throws InterruptedException {
+    // given
+    int threadCount = 3;
+    List<Long> userIds = new ArrayList<>();
+    userIds.add(user.getId());
+    userIds.add(user1.getId());
+    userIds.add(user2.getId());
+    ExecutorService executorService = Executors.newFixedThreadPool(16);
+    CountDownLatch latch = new CountDownLatch(threadCount);
+    Long  couponTemplateId = couponTemplate.getId();
+    AtomicInteger successCount = new AtomicInteger();
+    // when
+    for (long id: userIds) {
+      executorService.submit(()-> {
+        try{
+          couponService.issueCoupon(couponTemplateId,id);
+          successCount.incrementAndGet();
+        } finally {
+          latch.countDown();
+        }
+      });
+    }
+    latch.await();
+    // then
+    assertEquals(threadCount,successCount.get());
   }
 
 }
