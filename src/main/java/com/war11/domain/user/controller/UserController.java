@@ -2,13 +2,11 @@ package com.war11.domain.user.controller;
 
 import com.war11.domain.user.dto.request.UserRequest;
 import com.war11.domain.user.dto.response.UserResponse;
-import com.war11.domain.user.entity.User;
 import com.war11.domain.user.service.UserService;
 import com.war11.global.common.ApiResponse;
 import com.war11.global.config.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,7 +36,7 @@ public class UserController {
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(defaultValue = "10") int size) {
         Page<UserResponse> pageUser = userService.findAllUsers(userDetails, page, size);
-        return ApiResponse.successPage(pageUser);
+        return ApiResponse.success(pageUser);
     }
 
     @PatchMapping()

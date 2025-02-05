@@ -32,9 +32,4 @@ public record ApiResponse<T>(boolean successOrFail, T data, String message) {
             .body(new ApiResponse<>(false, null, message));
     }
 
-    public static <T> ResponseEntity<ApiResponse<Page<T>>> successPage (Page<T> pagination) {
-        return ResponseEntity.ok(new ApiResponse<>(true, pagination,null));
-    }
-
-
 }
