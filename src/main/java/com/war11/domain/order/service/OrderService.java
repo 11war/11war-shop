@@ -4,6 +4,7 @@ import com.war11.domain.cart.entity.Cart;
 import com.war11.domain.cart.entity.CartProduct;
 import com.war11.domain.cart.repository.CartProductRepository;
 import com.war11.domain.cart.repository.CartRepository;
+import com.war11.domain.coupon.annotation.Lock;
 import com.war11.domain.order.dto.request.ChangeOrderStatusRequest;
 import com.war11.domain.order.dto.response.CancelOrderResponse;
 import com.war11.domain.order.dto.response.UpdateOrderResponse;
@@ -36,7 +37,7 @@ public class OrderService {
   private final OrderProductRepository orderProductRepository;
   private final ProductRepository productRepository;
 
-
+  @Lock
   @Transactional
   public OrderResponse createOrder(Long userId, Long discountPrice) {
     User foundUser = userRepository.findById(userId).orElseThrow();
@@ -102,7 +103,7 @@ public class OrderService {
     return new UpdateOrderResponse("배송 상태가 변경되었습니다.", order.getStatus());
   }
 
-  // Todo: 주문 취소 시 상품 재고 반환하도록
+  @Lock
   @Transactional
   public CancelOrderResponse cancelOrder(Long orderId) {
     Order order = orderRepository.findById(orderId).orElseThrow();
