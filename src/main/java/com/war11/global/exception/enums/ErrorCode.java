@@ -32,7 +32,7 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "", "상품을 찾을 수 없습니다."),
 
     //Cart
-    CART_NOT_FOUND(HttpStatus.NOT_FOUND, "", "장바구니에 상품이 없습니다."),
+    CART_IS_EMPTY(HttpStatus.NOT_FOUND, "", "장바구니에 상품이 없습니다."),
     CART_PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "", "장바구니 상품을 찾을 수 없습니다."),
 
     //Order

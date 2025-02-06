@@ -58,7 +58,7 @@ public class CartService {
    */
   public GetCartResponse getCart(Long userId) {
     Cart foundCart = cartRepository.findCartByUserId(userId).orElseThrow(
-        () -> new NotFoundException(ErrorCode.CART_NOT_FOUND)
+        () -> new NotFoundException(ErrorCode.CART_IS_EMPTY)
     );
 
     List<CartProductResponse> foundCartProducts = cartProductRepository.findCartProductByCartId(
@@ -102,7 +102,7 @@ public class CartService {
 
   @Transactional
   public void deleteCart(Long cartId) {
-    Cart foundCart = findEntity(cartRepository, cartId, ErrorCode.CART_NOT_FOUND);
+    Cart foundCart = findEntity(cartRepository, cartId, ErrorCode.CART_IS_EMPTY);
     cartRepository.delete(foundCart);
   }
 
@@ -122,7 +122,7 @@ public class CartService {
     Cart foundCart = cartRepository.findCartByUserId(userId)
         .orElseGet(() -> {
           Cart newCart = new Cart(userRepository.findById(userId).orElseThrow(
-              () -> new NotFoundException(ErrorCode.CART_NOT_FOUND)
+              () -> new NotFoundException(ErrorCode.CART_IS_EMPTY)
           ));
           return cartRepository.save(newCart);
         });
