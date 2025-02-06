@@ -78,7 +78,7 @@ public class ProductController {
     return ApiResponse.success(productService.findByProductName(productFindRequest,pageable));
   }
 
-  @GetMapping("/auto_completing")
+  @GetMapping("/auto-completing")
   public ResponseEntity<ApiResponse<Page<KeywordResponse>>> findByAutoCompleting(
       @RequestParam(required = false)
       ProductAutoCompletingRequest productAutoCompletingRequest,
