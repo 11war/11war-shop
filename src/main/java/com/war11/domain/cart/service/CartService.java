@@ -52,7 +52,7 @@ public class CartService {
    * 장바구니 조회 <br>
    * 1. {@code userId}값 받기. <br>
    * 2. {@code userId}로 카트 조회. <br>
-   * 3. 조회한 카트 아이디로 장바구니 상품 전체 조회, stream으로 dto에 매핑한다.
+   * 3. 조회한 카트 아이디로 장바구니 상품 전체 조회, stream으로 dto에 매핑한다. <br>
    * 4. {@code cartId}, {@code foundCartProducts}리스트로 {@code GetCarResponse}생성 후 반환
    */
   public GetCartResponse getCart(Long userId) {
