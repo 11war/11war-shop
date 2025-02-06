@@ -28,7 +28,8 @@ public enum ErrorCode {
     //Product
     NOT_FOUND_PRODUCT_ID(HttpStatus.NOT_FOUND,"","찾는 상품이 없습니다."),
     INVALID_PRODUCT_STATUS_VALUE(HttpStatus.BAD_REQUEST,"" ,"해당하는 상태코드가 없습니다." ),
-    OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "", "재고가 부족합니다."),
+    OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "", "재고가 없습니다."),
+    INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "", "재고가 부족합니다."),
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "", "상품을 찾을 수 없습니다."),
 
     //Cart
@@ -38,6 +39,8 @@ public enum ErrorCode {
     //Order
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "", "주문을 찾을 수 없습니다."),
     ORDER_PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "", "주문 상품을 찾을 수 없습니다."),
+    CANNOT_CANCEL_ORDER(HttpStatus.BAD_REQUEST, "", "배송중이거나 배송완료되어 취소할 수 없는 주문입니다."),
+    ALREADY_CANCELED(HttpStatus.BAD_REQUEST, "", "이미 취소된 주문입니다."),
 
     //Coupon
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "", "쿠폰을 찾을 수 없습니다.");
