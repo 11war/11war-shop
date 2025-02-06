@@ -62,10 +62,11 @@ public class SecurityConfig {
 
         http
             .authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/", "/auth/signup", "/auth/signin","/logout",
-                        "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // 화이트리스트
-                .requestMatchers("/admin").hasRole("ADMIN") // 관리자 경로 권한 설정
-                .anyRequest().authenticated()); // 나머지 요청은 인증 필요
+                .requestMatchers("/", "/auth/signup", "/auth/signin", "/logout",
+                    "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // 화이트리스트
+                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")  // 관리자 전용 (수정)
+                .anyRequest().hasAnyAuthority("ROLE_USER", "ROLE_ADMIN") // 일반 접근 (수정)
+            );
 
 
         http

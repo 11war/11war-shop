@@ -5,6 +5,7 @@ import com.war11.domain.user.dto.response.UserResponse;
 import com.war11.domain.user.service.UserService;
 import com.war11.global.common.ApiResponse;
 import com.war11.global.config.CustomUserDetails;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
+@Tag(name = "관리자 쿠폰 API", description = "관리자 쿠폰 API 목록임!")
 public class UserController {
 
     private final UserService userService;
