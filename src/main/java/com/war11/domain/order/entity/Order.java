@@ -64,7 +64,7 @@ public class Order extends BaseTimeEntity {
     this.status = newStatus;
   }
 
-  public void cancelOrder() {
+  public void cancelThisOrder() {
     this.status = OrderStatus.CANCELLED;
   }
 }
