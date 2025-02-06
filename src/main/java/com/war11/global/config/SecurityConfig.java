@@ -62,6 +62,7 @@ public class SecurityConfig {
                 .requestMatchers("/admin").hasRole("ADMIN") // 관리자 경로 권한 설정
                 .anyRequest().authenticated()); // 나머지 요청은 인증 필요
 
+
         http
             .logout(logout -> logout
                 .logoutUrl("/logout")

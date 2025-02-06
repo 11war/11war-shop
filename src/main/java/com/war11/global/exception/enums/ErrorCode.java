@@ -20,9 +20,9 @@ public enum ErrorCode {
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "","이미 로그아웃 되었습니다. 로그인이 필요합니다."),
 
     //User
-    USER_ID_ERROR(HttpStatus.UNAUTHORIZED,"1","아이디나 비밀번호가 올바르지 않습니다."),
-    USER_PW_ERROR(HttpStatus.UNAUTHORIZED,"2","아이디나 비밀번호가 올바르지 않습니다."),
-
+    USER_ID_ERROR(HttpStatus.UNAUTHORIZED,"","아이디나 비밀번호가 올바르지 않습니다."),
+    USER_PW_ERROR(HttpStatus.UNAUTHORIZED,"","아이디나 비밀번호가 올바르지 않습니다."),
+    BAD_REQUEST_PW(HttpStatus.BAD_REQUEST, "","기존 비밀번호가 틀렸습니다. 정보가 변경되지 않습니다."),
 
     //Product
     NOT_FOUND_PRODUCT_ID(HttpStatus.NOT_FOUND,"","찾는 상품이 없습니다."),

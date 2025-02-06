@@ -42,8 +42,8 @@ public class UserController {
     @PatchMapping()
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(@AuthenticationPrincipal CustomUserDetails userDetails , @RequestBody
         UserRequest request) {
-        UserResponse userResponse = userService.updateUsers(userDetails, request);
-        return ApiResponse.success(userResponse);
+        UserResponse updateResponse = userService.updateUsers(userDetails, request);
+        return ApiResponse.success(updateResponse);
     }
 
 }

@@ -13,7 +13,6 @@ public class JpaAuditingConfig {
 
     @PersistenceContext
     private EntityManager entityManager;
-
     @Bean
     public JPAQueryFactory paQueryFactory() {
         return new JPAQueryFactory(entityManager);

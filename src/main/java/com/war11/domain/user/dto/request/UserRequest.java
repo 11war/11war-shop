@@ -12,4 +12,10 @@ public class UserRequest {
     @NotBlank
     private String name;
 
+    @NotBlank
+    private String newPassword;
+
+    @NotBlank
+    private String oldPassword;
+
 }

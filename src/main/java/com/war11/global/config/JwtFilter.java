@@ -75,9 +75,6 @@ public class JwtFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authToken);
             chain.doFilter(request,response);
 
-            /*
-            얘는 맘에들지 않음, 뭔가 다른 방식으로 고쳐보자.
-             */
         } catch (SecurityException | MalformedJwtException e) {
             sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않는 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {
