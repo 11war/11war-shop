@@ -2,7 +2,6 @@ package com.war11.domain.order.dto.response;
 
 import com.war11.domain.order.entity.Order;
 import com.war11.domain.order.entity.enums.OrderStatus;
-import com.war11.domain.user.entity.User;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
@@ -12,7 +11,7 @@ public record OrderResponse (
     Long orderId,
     List<OrderProductResponse> orderProducts,
     Long totalPrice,
-    Long discountedPrice,
+    Integer discountedPrice,
     Long resultPrice,
     OrderStatus orderStatus,
     LocalDateTime createdAt,

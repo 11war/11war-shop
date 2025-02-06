@@ -38,7 +38,7 @@ public class Order extends BaseTimeEntity {
   @JoinColumn(name = "user_id")
   private User user;
 
-  private Long discountedPrice;
+  private Integer discountedPrice;
 
   private Long totalPrice;
 
@@ -49,14 +49,14 @@ public class Order extends BaseTimeEntity {
     this.user = user;
   }
 
-  public Order(User user, Long discountedPrice, Long totalPrice) {
+  public Order(User user, Integer discountedPrice, Long totalPrice) {
     this.user = user;
     this.discountedPrice = discountedPrice;
     this.totalPrice = totalPrice;
     status = OrderStatus.PAID;
   }
 
-  public void updateOrderDetails(Long discountedPrice, List<OrderProduct> orderProducts) {
+  public void updateOrderDetails(Integer discountedPrice, List<OrderProduct> orderProducts) {
     this.discountedPrice = discountedPrice;
     this.totalPrice = orderProducts.stream()
         .mapToLong(orderProduct -> orderProduct.getProductPrice() * orderProduct.getQuantity())

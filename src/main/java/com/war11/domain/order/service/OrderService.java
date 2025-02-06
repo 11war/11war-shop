@@ -63,7 +63,7 @@ public class OrderService {
   @Transactional
   public OrderResponse createOrder(Long userId, OrderRequest request) {
     User foundUser = findEntity(userRepository, userId, ErrorCode.USER_NOT_FOUND);
-    Long discountPrice = request.discountPrice();
+    Integer discountPrice = request.coupon().getCouponTemplate().getValue();
     //주문 생성
     Order order = orderRepository.save(new Order(foundUser));
 
@@ -82,7 +82,7 @@ public class OrderService {
       if (order.getDiscountedPrice() > order.getTotalPrice()) {
         log.warn("할인가격({})가 총 가격({})보다 커서 조정됨", discountPrice, order.getTotalPrice());
 
-        discountPrice = order.getTotalPrice();
+        discountPrice = (order.getTotalPrice().intValue());
         order.updateOrderDetails(discountPrice, orderProducts);
       }
 
