@@ -29,7 +29,7 @@ public class UserControllerTest {
         User user = new User("jjy","password","주양");
 
         //when
-        when(userService.findById(userId)).thenReturn(UserResponse.toDto(user));
+        when(userService.findById(userId)).thenReturn(new UserResponse(user));
         UserResponse foundUser = userService.findById(userId);
 
         //then
@@ -37,4 +37,5 @@ public class UserControllerTest {
         assertThat(foundUser.getLoginId()).isEqualTo(user.getLoginId());
         assertThat(foundUser.getName()).isEqualTo(user.getName());
     }
+
 }
