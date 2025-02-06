@@ -44,7 +44,8 @@ public class SecurityConfig {
 
         // JWT는 Stateless로 사용되기 때문에 csrf 공격에 대한 보호가 필요치 않다. 따라서 해당 기능을 비활성화한다.
         http
-            .csrf((csrf) -> csrf.disable());
+            .csrf((csrf) -> csrf.disable())
+            .cors((cors) -> cors.disable());
 
         /*
         Jwt 토큰을 이용한 로그인을 할 것이므로 폼 로그인 기능 비활성화
