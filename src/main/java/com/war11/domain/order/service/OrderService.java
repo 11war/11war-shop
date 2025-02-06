@@ -82,6 +82,7 @@ public class OrderService {
         .map(order -> {
           List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(order.getId());
           return GetAllOrdersResponse.builder()
+              .orderId(order.getId())
               .productNames(orderProducts.stream()
                   .map(OrderProduct::getProductName)
                   .toList())
@@ -108,7 +109,7 @@ public class OrderService {
     Order order = orderRepository.findById(orderId).orElseThrow();
     order.updateOrderStatus(request.orderStatus());
 
-    return new UpdateOrderResponse("배송 상태가 변경되었습니다.", order.getStatus());
+    return new UpdateOrderResponse(orderId,"배송 상태가 변경되었습니다.", order.getStatus());
   }
 
   @Lock
@@ -123,6 +124,6 @@ public class OrderService {
       foundProduct.upToQuantity(orderProduct.getQuantity());
     });
 
-    return new CancelOrderResponse("주문이 취소되었습니다.", order.getStatus());
+    return new CancelOrderResponse(orderId,"주문이 취소되었습니다.", order.getStatus());
   }
 }

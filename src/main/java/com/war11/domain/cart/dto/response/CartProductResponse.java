@@ -4,6 +4,8 @@ import lombok.Builder;
 
 @Builder
 public record CartProductResponse(
+    Long cartId,
+    Long productId,
     String productName,
     Long productPrice,
     Integer productQuantity,

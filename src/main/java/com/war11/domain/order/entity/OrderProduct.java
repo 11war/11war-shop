@@ -43,6 +43,8 @@ public class OrderProduct {
 
     public OrderProductResponse toDto() {
         return OrderProductResponse.builder()
+            .orderId(order.getId())
+            .orderProductId(id)
             .productName(productName)
             .productPrice(productPrice)
             .quantity(quantity)

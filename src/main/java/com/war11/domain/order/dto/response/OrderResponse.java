@@ -9,6 +9,7 @@ import lombok.Builder;
 
 @Builder
 public record OrderResponse (
+    Long orderId,
     List<OrderProductResponse> orderProducts,
     Long totalPrice,
     Long discountedPrice,

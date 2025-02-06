@@ -46,7 +46,7 @@ public class CartService {
     List<CartProductResponse> foundCartProducts = cartProductRepository.findCartProductByCartId(
         foundCart.getId()).stream().map(CartProduct::toDto).toList();
 
-    return new GetCartResponse(foundCartProducts);
+    return new GetCartResponse(foundCart.getId(), foundCartProducts);
   }
 
   @Transactional
