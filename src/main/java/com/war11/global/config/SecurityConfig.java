@@ -1,11 +1,8 @@
 package com.war11.global.config;
 
-import static com.war11.global.util.JwtUtil.EXPIRED_TOKEN_SET;
-
 import com.war11.domain.auth.service.CustomUserDetailsService;
 import com.war11.global.util.JwtUtil;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,6 +13,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+
+import java.io.IOException;
+
+import static com.war11.global.util.JwtUtil.EXPIRED_TOKEN_SET;
 
 @Configuration
 @EnableWebSecurity
@@ -44,7 +46,9 @@ public class SecurityConfig {
 
         // JWT는 Stateless로 사용되기 때문에 csrf 공격에 대한 보호가 필요치 않다. 따라서 해당 기능을 비활성화한다.
         http
-            .csrf((csrf) -> csrf.disable());
+                .csrf((csrf) -> csrf.disable())
+                .cors(cors -> cors.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues()));
+
 
         /*
         Jwt 토큰을 이용한 로그인을 할 것이므로 폼 로그인 기능 비활성화
@@ -58,9 +62,12 @@ public class SecurityConfig {
 
         http
             .authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/", "/auth/signup", "/auth/signin","/logout").permitAll() // 화이트리스트
-                .requestMatchers("/admin").hasRole("ADMIN") // 관리자 경로 권한 설정
-                .anyRequest().authenticated()); // 나머지 요청은 인증 필요
+                .requestMatchers("/", "/auth/signup", "/auth/signin", "/logout",
+                    "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // 화이트리스트
+                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")  // 관리자 전용 (수정)
+                .anyRequest().hasAnyAuthority("ROLE_USER", "ROLE_ADMIN") // 일반 접근 (수정)
+            );
+
 
         http
             .logout(logout -> logout

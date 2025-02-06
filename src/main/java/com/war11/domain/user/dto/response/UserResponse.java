@@ -7,15 +7,13 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UserResponse {
-    private final Long id;
-    private final String loginId;
-    private final String name;
+    private Long id;
+    private String loginId;
+    private String name;
 
-    public static UserResponse toDto(User user){
-        return new UserResponse(
-            user.getId(),
-            user.getLoginId(),
-            user.getName()
-        );
+    public UserResponse(User foundUser) {
+        this.id = foundUser.getId();
+        this.loginId = foundUser.getLoginId();
+        this.name = foundUser.getName();
     }
 }
