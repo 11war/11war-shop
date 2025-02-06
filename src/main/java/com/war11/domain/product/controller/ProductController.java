@@ -80,7 +80,6 @@ public class ProductController {
 
   @GetMapping("/auto-completing")
   public ResponseEntity<ApiResponse<Page<KeywordResponse>>> findByAutoCompleting(
-      @RequestParam(required = false)
       ProductAutoCompletingRequest productAutoCompletingRequest,
       @PageableDefault(sort = "count",
           direction = org.springframework.data.domain.Sort.Direction.DESC)
