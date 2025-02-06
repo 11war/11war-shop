@@ -36,8 +36,7 @@ public class OrderController {
       @AuthenticationPrincipal CustomUserDetails userDetails,
       @RequestBody OrderRequest request) {
     Long userId = userDetails.getId();
-    Long discountPrice = request.discountPrice();
-    OrderResponse response = orderService.createOrder(userId, discountPrice);
+    OrderResponse response = orderService.createOrder(userId, request);
 
     return ApiResponse.success(response);
   }
