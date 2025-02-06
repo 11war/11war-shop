@@ -76,9 +76,6 @@ public class CouponIssueTest {
         .build();
     couponTemplateRepository.save(couponTemplate);
     couponService.initializeCouponCount();
-    System.out.println("Redis 초기화 후 - couponTemplateId: " + couponTemplate.getId());
-    String value = redisTemplate.opsForValue().get("coupon:count:" + couponTemplate.getId());
-    System.out.println("Redis에 설정된 수량: " + value);
     redisTemplate.delete(redisTemplate.keys("LOCK:*"));
   }
 
@@ -199,30 +196,21 @@ public class CouponIssueTest {
       CountDownLatch latch = new CountDownLatch(threadCount);
       Long couponTemplateId = couponTemplate.getId();
       AtomicInteger successCount = new AtomicInteger();
-      System.out.println("테스트 시작 - couponTemplateId: " + couponTemplateId);
-      System.out.println("초기 쿠폰 수량: " + couponTemplate.getQuantity());
 
       // when
       for (long id : userIds) {
         executorService.submit(() -> {
           try {
-            System.out.println("쿠폰 발급 시도 - userId: " + id);
             couponService.issueCouponWithLargeScale(couponTemplateId, id);
-            System.out.println("쿠폰 발급 성공 - userId: " + id);
-            System.out.println("Lock 획득 상태: " + redisTemplate.hasKey("LOCK:" + couponTemplateId + ":" + id));
             successCount.incrementAndGet();
           } catch (RuntimeException e) {  // RuntimeException으로 변경
-            System.out.println("쿠폰 발급 실패 - userId: " + id);
             e.printStackTrace();
-            System.out.println("에러 메시지: " + e.getMessage());
           } finally {
             latch.countDown();
           }
         });
       }
       latch.await();
-      System.out.println("최종 성공 카운트: " + successCount.get());
-
       // then
       assertEquals(threadCount, successCount.get());
     }
