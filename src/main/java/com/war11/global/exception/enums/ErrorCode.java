@@ -22,17 +22,25 @@ public enum ErrorCode {
     //User
     USER_ID_ERROR(HttpStatus.UNAUTHORIZED,"1","아이디나 비밀번호가 올바르지 않습니다."),
     USER_PW_ERROR(HttpStatus.UNAUTHORIZED,"2","아이디나 비밀번호가 올바르지 않습니다."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "", "유저를 찾을 수 없습니다."),
 
 
     //Product
     NOT_FOUND_PRODUCT_ID(HttpStatus.NOT_FOUND,"","찾는 상품이 없습니다."),
-    INVALID_PRODUCT_STATUS_VALUE(HttpStatus.BAD_REQUEST,"" ,"해당하는 상태코드가 없습니다." );
+    INVALID_PRODUCT_STATUS_VALUE(HttpStatus.BAD_REQUEST,"" ,"해당하는 상태코드가 없습니다." ),
+    OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "", "재고가 부족합니다."),
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "", "상품을 찾을 수 없습니다."),
 
     //Cart
+    CART_NOT_FOUND(HttpStatus.NOT_FOUND, "", "장바구니에 상품이 없습니다."),
+    CART_PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "", "장바구니 상품을 찾을 수 없습니다."),
 
     //Order
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "", "주문을 찾을 수 없습니다."),
+    ORDER_PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "", "주문 상품을 찾을 수 없습니다."),
 
     //Coupon
+    COUPON_NOT_FOUND(HttpStatus.NOT_FOUND, "", "쿠폰을 찾을 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
