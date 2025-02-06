@@ -45,21 +45,36 @@ public class Order extends BaseTimeEntity {
   @Enumerated(EnumType.STRING)
   private OrderStatus status;
 
+  public Order(User user) {
+    this.user = user;
+  }
+
   public Order(User user, Long discountedPrice, Long totalPrice) {
     this.user = user;
     this.discountedPrice = discountedPrice;
     this.totalPrice = totalPrice;
+    status = OrderStatus.PAID;
   }
 
-  public void updateOrderDetails(Long discountedPrice) {
+  public void updateOrderDetails(Long discountedPrice, List<OrderProduct> orderProducts) {
     this.discountedPrice = discountedPrice;
+    this.totalPrice = orderProducts.stream()
+        .mapToLong(orderProduct -> orderProduct.getProductPrice() * orderProduct.getQuantity())
+        .sum();
+    this.status = OrderStatus.PAID;
   }
 
   public OrderResponse toDto(List<OrderProductResponse> orderProducts) {
-    return OrderResponse.builder().orderId(id).orderProducts(orderProducts)
-        .totalPrice(totalPrice).discountedPrice(discountedPrice)
-        .resultPrice(totalPrice - discountedPrice).orderStatus(status)
-        .createdAt(getCreatedAt()).updatedAt(getUpdatedAt()).build();
+    return OrderResponse.builder()
+        .orderId(id)
+        .orderProducts(orderProducts)
+        .totalPrice(totalPrice)
+        .discountedPrice(discountedPrice)
+        .resultPrice(totalPrice - discountedPrice)
+        .orderStatus(status)
+        .createdAt(getCreatedAt())
+        .updatedAt(getUpdatedAt())
+        .build();
   }
 
   public void updateOrderStatus(OrderStatus newStatus) {

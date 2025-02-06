@@ -5,7 +5,9 @@ import com.war11.domain.cart.entity.CartProduct;
 import com.war11.domain.cart.repository.CartProductRepository;
 import com.war11.domain.cart.repository.CartRepository;
 import com.war11.domain.coupon.annotation.Lock;
+import com.war11.domain.lock.service.LockService;
 import com.war11.domain.order.dto.request.ChangeOrderStatusRequest;
+import com.war11.domain.order.dto.request.OrderRequest;
 import com.war11.domain.order.dto.response.CancelOrderResponse;
 import com.war11.domain.order.dto.response.GetAllOrdersResponse;
 import com.war11.domain.order.dto.response.OrderProductResponse;
@@ -20,10 +22,10 @@ import com.war11.domain.product.entity.Product;
 import com.war11.domain.product.repository.ProductRepository;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
-import com.war11.global.exception.BusinessException;
 import com.war11.global.exception.base.InvalidRequestException;
 import com.war11.global.exception.base.NotFoundException;
 import com.war11.global.exception.enums.ErrorCode;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,8 @@ public class OrderService {
   private final OrderRepository orderRepository;
   private final OrderProductRepository orderProductRepository;
   private final ProductRepository productRepository;
+  private final LockService lockService;
+  private final EntityManager em;
 
   /**
    * 주문 생성 로직 <br>
@@ -56,60 +60,66 @@ public class OrderService {
    * 9. 저장된 order객체 {@code responseDto}로 변환, 장바구니에서 주문한 상품들 삭제 <br>
    * 10. 장바구니가 비었을 경우 {@code Cart}객체 삭제하고 {@code responseDto} 반환 <br>
    */
-  @Lock
   @Transactional
-  public OrderResponse createOrder(Long userId, Long discountPrice) {
+  public OrderResponse createOrder(Long userId, OrderRequest request) {
     User foundUser = findEntity(userRepository, userId, ErrorCode.USER_NOT_FOUND);
-    Cart foundCart = cartRepository.findCartByUserId(userId)
-        .orElseThrow(() -> new BusinessException(ErrorCode.CART_IS_EMPTY));
+    Long discountPrice = request.discountPrice();
+    //주문 생성
+    Order order = orderRepository.save(new Order(foundUser));
 
-    List<CartProduct> cartProducts = cartProductRepository.findCartProductByCartIdAndIsChecked(
-        foundCart.getId(), true);
+    try {
+      Cart foundCart = cartRepository.findCartByUserId(userId)
+          .orElseThrow(() -> new NotFoundException(ErrorCode.CART_IS_EMPTY));
 
-    cartProducts.forEach(cartProduct -> {
-      if (cartProduct.getProduct().getQuantity() < cartProduct.getQuantity()) {
-        throw new InvalidRequestException(ErrorCode.INSUFFICIENT_STOCK);
-      }
-      cartProduct.getProduct().downToQuantity(cartProduct.getQuantity());
-    });
+      List<CartProduct> cartProducts = cartProductRepository.findCartProductByCartIdAndIsChecked(
+          foundCart.getId(), true);
+      em.flush();
+      List<OrderProduct> orderProducts = cartProducts.stream()
+          .map(cartProduct -> dcereateProductQuantityAndCreateOrderProduct(cartProduct, order))
+          .toList();
 
-    Order order = new Order(foundUser);
-
-    List<OrderProduct> orderProducts = cartProducts.stream()
-        .map(cartProduct -> new OrderProduct(order, cartProduct.getProduct().getId(),
-            cartProduct.getProduct().getName(), cartProduct.getProduct().getPrice(),
-            cartProduct.getQuantity())).toList();
-
-
-    order.updateOrderDetails(discountPrice, orderProducts);
-    if (order.getDiscountedPrice() > order.getTotalPrice()) {
-      log.warn("할인가격({})가 총 가격({})보다 커서 조정됨", discountPrice, order.getTotalPrice());
-
-      discountPrice = order.getTotalPrice();
       order.updateOrderDetails(discountPrice, orderProducts);
+      if (order.getDiscountedPrice() > order.getTotalPrice()) {
+        log.warn("할인가격({})가 총 가격({})보다 커서 조정됨", discountPrice, order.getTotalPrice());
+
+        discountPrice = order.getTotalPrice();
+        order.updateOrderDetails(discountPrice, orderProducts);
+      }
+
+      orderProductRepository.saveAll(orderProducts);
+
+      // 카트 비우기
+      cartProductRepository.deleteAll(cartProducts);
+
+      return order.toDto(
+          orderProducts.stream()
+              .map(OrderProduct::toDto)
+              .toList()
+      );
+    } catch (Exception e) {
+      order.updateOrderStatus(OrderStatus.CANCELLED);
+      throw e;
     }
-    orderRepository.save(order);
-    orderProductRepository.saveAll(orderProducts);
-    List<OrderProductResponse> orderProductResponses = orderProducts.stream()
-        .map(OrderProduct::toDto).toList();
+  }
 
-    OrderResponse response = order.toDto(orderProductResponses);
+  private OrderProduct dcereateProductQuantityAndCreateOrderProduct(CartProduct cartProduct,
+      Order order) {
+    lockService.lock(String.valueOf(cartProduct.getId()));
+    Product product = cartProduct.getProduct();
 
-    cartProductRepository.deleteAll(cartProducts);
-
-    if (cartProductRepository.findCartProductByCartId(foundCart.getId()).isEmpty()) {
-      cartRepository.delete(foundCart);
+    if (product.getQuantity() < cartProduct.getQuantity()) {
+      throw new InvalidRequestException(ErrorCode.INSUFFICIENT_STOCK);
     }
+    product.downToQuantity(cartProduct.getQuantity());
 
-    return response;
+    return new OrderProduct(order, product.getId(), product.getName(), product.getPrice(),
+        cartProduct.getQuantity());
   }
 
   /**
-   * 모든 주문내역 조회 <br>
-   * 1. {@code userId}입력받음 <br>
-   * 2. 입력받은 아이디로 {@code order}객체 전체 조회후 리스트에 담음. <br>
-   * 3. {@code orders}를 스트림으로 돌면서 각 주문마다 {@code orderId}, {@code productNames}, {@code totalPrice}, {@code orderStatus}가 담긴 dto로 변환 <br>
-   * 4. {@code getAllOrdersResponse} 반환
+   * 모든 주문내역 조회 <br> 1. {@code userId}입력받음 <br> 2. 입력받은 아이디로 {@code order}객체 전체 조회후 리스트에 담음. <br> 3.
+   * {@code orders}를 스트림으로 돌면서 각 주문마다 {@code orderId}, {@code productNames}, {@code totalPrice},
+   * {@code orderStatus}가 담긴 dto로 변환 <br> 4. {@code getAllOrdersResponse} 반환
    */
   public List<GetAllOrdersResponse> getAllOrder(Long userId) {
     List<Order> orders = orderRepository.findByUserId(userId);
@@ -145,14 +155,12 @@ public class OrderService {
     Order order = findEntity(orderRepository, orderId, ErrorCode.ORDER_NOT_FOUND);
     order.updateOrderStatus(request.orderStatus());
 
-    return new UpdateOrderResponse(orderId,"배송 상태가 변경되었습니다.", order.getStatus());
+    return new UpdateOrderResponse(orderId, "배송 상태가 변경되었습니다.", order.getStatus());
   }
 
   /**
-   * 주문 취소하기 로직 <br>
-   * 1. {@code orderId} 입력받음. <br>
-   * 2. 주문 취소 후 주문에 있던 상품들 재고 반환 <br>
-   * 3. {@code orderId}, {@code message}, {@code orderStatus} 담아서 responseDto로 반환
+   * 주문 취소하기 로직 <br> 1. {@code orderId} 입력받음. <br> 2. 주문 취소 후 주문에 있던 상품들 재고 반환 <br> 3.
+   * {@code orderId}, {@code message}, {@code orderStatus} 담아서 responseDto로 반환
    */
   @Lock
   @Transactional
@@ -167,19 +175,19 @@ public class OrderService {
 
     List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(orderId);
     orderProducts.forEach(orderProduct -> {
-      Product foundProduct = findEntity(productRepository, orderProduct.getId(), ErrorCode.PRODUCT_NOT_FOUND);
+      Product foundProduct = findEntity(productRepository, orderProduct.getId(),
+          ErrorCode.PRODUCT_NOT_FOUND);
       foundProduct.upToQuantity(orderProduct.getQuantity());
     });
 
     order.cancelThisOrder();
 
-    return new CancelOrderResponse(orderId,"주문이 취소되었습니다.", order.getStatus());
+    return new CancelOrderResponse(orderId, "주문이 취소되었습니다.", order.getStatus());
   }
 
   /**
-   * 제네릭타입 find 메서드 <br>
-   * 타입 별로 {@code repository}, {@code id}, {@code errorCode}대입받음. <br>
-   * 각 레포지토리에서 {@code id}기준으로 탐색, 없을 시 예외 발생. <br>
+   * 제네릭타입 find 메서드 <br> 타입 별로 {@code repository}, {@code id}, {@code errorCode}대입받음. <br> 각 레포지토리에서
+   * {@code id}기준으로 탐색, 없을 시 예외 발생. <br>
    */
   private <T> T findEntity(JpaRepository<T, Long> repository, Long id, ErrorCode errorCode) {
     return repository.findById(id).orElseThrow(
