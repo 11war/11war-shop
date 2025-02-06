@@ -37,6 +37,19 @@ public class OrderService {
   private final OrderProductRepository orderProductRepository;
   private final ProductRepository productRepository;
 
+  /**
+   * 주문 생성 로직 <br>
+   * 1. {@code userId}, {@code discountPrice} 입력받음. <br>
+   * 2. {@code userId}로 유저와 카트 객체 조회. <br>
+   * 3. 조회된 장바구니의 상품 중 {@code isChecked}가 true인 상품들로 리스트 생성. <br>
+   * 4. 주문 생성 시점에 주문 수량만큼 각 상품 재고 감소시킴 <br>
+   * 5. 주문 생성 <br>
+   * 6. {@code cartProduct}리스트에서 스트림으로 {@code orderProduct}로 변환 <br>
+   * 7. {@code orderProducts}모두 리포지토리에 저장, dto로 변환해서 리스트 생성 <br>
+   * 8. {@code orderProductResponse}리스트와 {@code discountPrice}입력해서 Order객체 완성 <br>
+   * 9. 저장된 order객체 {@code responseDto}로 변환, 장바구니에서 주문한 상품들 삭제 <br>
+   * 10. 장바구니가 비었을 경우 {@code Cart}객체 삭제하고 {@code responseDto} 반환 <br>
+   */
   @Lock
   @Transactional
   public OrderResponse createOrder(Long userId, Long discountPrice) {
@@ -75,6 +88,13 @@ public class OrderService {
     return response;
   }
 
+  /**
+   * 모든 주문내역 조회 <br>
+   * 1. {@code userId}입력받음 <br>
+   * 2. 입력받은 아이디로 {@code order}객체 전체 조회후 리스트에 담음. <br>
+   * 3. {@code orders}를 스트림으로 돌면서 각 주문마다 {@code orderId}, {@code productNames}, {@code totalPrice}, {@code orderStatus}가 담긴 dto로 변환 <br>
+   * 4. {@code getAllOrdersResponse} 반환
+   */
   public List<GetAllOrdersResponse> getAllOrder(Long userId) {
     List<Order> orders = orderRepository.findByUserId(userId);
 
@@ -112,11 +132,17 @@ public class OrderService {
     return new UpdateOrderResponse(orderId,"배송 상태가 변경되었습니다.", order.getStatus());
   }
 
+  /**
+   * 주문 취소하기 로직 <br>
+   * 1. {@code orderId} 입력받음. <br>
+   * 2. 주문 취소 후 주문에 있던 상품들 재고 반환 <br>
+   * 3. {@code orderId}, {@code message}, {@code orderStatus} 담아서 responseDto로 반환
+   */
   @Lock
   @Transactional
   public CancelOrderResponse cancelOrder(Long orderId) {
     Order order = orderRepository.findById(orderId).orElseThrow();
-    order.cancelOrder();
+    order.cancelThisOrder();
 
     List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(orderId);
     orderProducts.forEach(orderProduct -> {
