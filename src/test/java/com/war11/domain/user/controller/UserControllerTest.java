@@ -26,10 +26,10 @@ public class UserControllerTest {
     void 단일회원_조회성공() {
         //given
         long userId = 1L;
-        User user = new User("jjy","password","주양");
+        User user = new User("jjy","password","주양","USER");
 
         //when
-        when(userService.findById(userId)).thenReturn(UserResponse.toDto(user));
+        when(userService.findById(userId)).thenReturn(new UserResponse(user));
         UserResponse foundUser = userService.findById(userId);
 
         //then
@@ -37,4 +37,5 @@ public class UserControllerTest {
         assertThat(foundUser.getLoginId()).isEqualTo(user.getLoginId());
         assertThat(foundUser.getName()).isEqualTo(user.getName());
     }
+
 }

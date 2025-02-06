@@ -1,6 +1,6 @@
 package com.war11.domain.auth.service;
 
-import static com.war11.global.util.JwtUtil.EXPIRED_TOKEN_SET;
+import static com.war11.domain.user.entity.QUser.user;
 
 import com.war11.domain.auth.dto.request.SigninRequest;
 import com.war11.domain.auth.dto.request.SignupRequest;
@@ -8,13 +8,12 @@ import com.war11.domain.auth.dto.response.SigninResponse;
 import com.war11.domain.auth.dto.response.SignupResponse;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
-import com.war11.global.config.CustomUserDetails;
 import com.war11.global.exception.BusinessException;
 import com.war11.global.exception.enums.ErrorCode;
 import com.war11.global.util.JwtUtil;
-import io.jsonwebtoken.Claims;
+import java.util.Collections;
+import javax.management.relation.Role;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +39,9 @@ public class AuthService {
             .loginId(request.getLoginId())
             .name(request.getName())
             .password(encodedPassward)
+            .role("USER")  // 기본 역할 추가
             .build();
+
         userRepository.save(newUser);
         return new SignupResponse("회원가입이 완료되었습니다.");
     }

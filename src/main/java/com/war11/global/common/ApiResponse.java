@@ -28,4 +28,5 @@ public record ApiResponse<T>(boolean successOrFail, T data, String message) {
         return ResponseEntity.status(status)
             .body(new ApiResponse<>(false, null, message));
     }
+
 }
