@@ -2,11 +2,13 @@ package com.war11.domain.product.repository;
 
 import static com.war11.domain.product.entity.QProduct.product;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.war11.domain.product.dto.request.ProductFindRequest;
 import com.war11.domain.product.dto.response.ProductResponse;
+import com.war11.domain.product.entity.enums.ProductStatus;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,8 @@ import org.springframework.data.domain.Pageable;
 public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
   private final JPAQueryFactory jpaQueryFactory;
+
+  BooleanBuilder builder =  new BooleanBuilder();
 
   @Override
   public Page<ProductResponse> findByProductName(ProductFindRequest productFindRequest,
@@ -36,16 +40,11 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         ))
         .from(product)
         .where(
-             findName(productFindRequest.getName()),
-            findCategory(productFindRequest.getCategory()),
-            minPrice(productFindRequest.getMinPrice()),
-            maxPrice(productFindRequest.getMaxPrice()),
-            minQuantity(productFindRequest.getMinQuantity()),
-            maxQuantity(productFindRequest.getMaxQuantity()),
+             builder,
         product.updatedAt.between(
-            productFindRequest.getStartDateTime(),
-            productFindRequest.getEndDateTime()),
-            product.status.eq(productFindRequest.getStatus())
+            productFindRequest.startDateTime(),
+            productFindRequest.endDateTime()),
+            product.status.eq(ProductStatus.valueOf(productFindRequest.status()))
         )
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
@@ -56,50 +55,41 @@ long total = Optional.ofNullable(jpaQueryFactory
     .select(product.count())
     .from(product)
     .where(
-        findName(productFindRequest.getName()),
-        findCategory(productFindRequest.getCategory()),
-        minPrice(productFindRequest.getMinPrice()),
-        maxPrice(productFindRequest.getMaxPrice()),
-        minQuantity(productFindRequest.getMinQuantity()),
-        maxQuantity(productFindRequest.getMaxQuantity()),
+        builder,
         product.updatedAt.between(
-            productFindRequest.getStartDateTime(),
-            productFindRequest.getEndDateTime()),
-        product.status.eq(productFindRequest.getStatus())
+            productFindRequest.startDateTime(),
+            productFindRequest.endDateTime()),
+        product.status.eq(ProductStatus.valueOf(productFindRequest.status()))
     )
     .offset(pageable.getOffset())
     .limit(pageable.getPageSize())
     .fetchOne()).orElse(0L);
 
 
+    if(productFindRequest.name()!=null){
+      builder.and(product.name.like(productFindRequest.name()+"%"));
+    }
 
+    if(productFindRequest.category()!=null){
+      builder.and(product.category.like(productFindRequest.category()+"%"));
+    }
 
+    if(productFindRequest.minPrice()!=null){
+      builder.and(product.price.goe(productFindRequest.minPrice()));
+    }
 
+    if(productFindRequest.maxPrice()!=null){
+      builder.and(product.price.loe(productFindRequest.maxPrice()));
+    }
+
+    if(productFindRequest.minQuantity()!=null){
+      builder.and(product.quantity.goe(productFindRequest.minQuantity()));
+    }
+
+    if(productFindRequest.maxQuantity()!=null){
+      builder.and(product.quantity.loe(productFindRequest.maxQuantity()));
+    }
 
     return new PageImpl<>(response,pageable,total);
   }
-
-  private BooleanExpression findName(String name) {
-    return name != null ? product.name.like("%"+name+"%") : null;
-  }
-  private BooleanExpression findCategory(String category) {
-    return category != null ? product.category.eq(category) : null;
-  }
-
-  private BooleanExpression minPrice(Long minPrice){
-    return minPrice != -1L ? product.price.goe(minPrice) : null;
-  }
-
-  private BooleanExpression maxPrice(Long maxPrice){
-    return maxPrice != -1L ? product.price.loe(maxPrice) : null;
-  }
-
-  private BooleanExpression minQuantity(int minQuantity){
-    return minQuantity != -1 ? product.quantity.goe(minQuantity) : null;
-  }
-
-  private BooleanExpression maxQuantity(int maxQuantity){
-    return maxQuantity != -1 ? product.quantity.goe(maxQuantity) : null;
-  }
-
 }

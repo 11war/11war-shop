@@ -64,7 +64,8 @@ public class ProductServiceTest {
     when(productRepository.save(any(Product.class))).thenReturn(product);
 
     //when
-    ProductResponse actualResult = productService.createProduct(productRequest);
+    ProductResponse actualResult = productService.createProduct(productRequest,
+        "ADMIN");
 
     //then
     ProductResponse expectResult = product.toDto(product);
@@ -93,7 +94,8 @@ public class ProductServiceTest {
     when(productRepository.findByIdForUpdate(any(Long.class))).thenReturn(product);
 
     //when
-    ProductResponse actualResult = productService.updateProduct(productUpdateRequest);
+    ProductResponse actualResult = productService.updateProduct(productUpdateRequest,
+        "ADMIN");
 
     //then
     ProductResponse expectResult = product.toDto(product);
@@ -117,7 +119,7 @@ public class ProductServiceTest {
 
 
     //when
-    productService.deleteProduct(1L);
+    productService.deleteProduct(1L, "ADMIN");
 
     //then
     assertThat(product.isDeleted())

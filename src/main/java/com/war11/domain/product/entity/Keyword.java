@@ -30,10 +30,4 @@ public class Keyword {
     this.count = count;
     this.cacheSaveTime = cacheSaveTime;
   }
-
-  public void incrementCount() {
-    this.count = this.count + 1;
-  }
-
-
 }
