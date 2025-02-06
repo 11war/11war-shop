@@ -80,6 +80,7 @@ public class CouponService {
     return findCouponTemplateById(id).toDto();
   }
 
+  @Transactional
   public void editCouponTemplate(Long id, CouponTemplateUpdateRequest updateRequest) {
     CouponTemplate couponTemplate = findCouponTemplateById(id);
     couponTemplate.updateCouponTemplate(updateRequest);
