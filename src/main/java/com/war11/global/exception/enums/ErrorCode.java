@@ -18,6 +18,7 @@ public enum ErrorCode {
     ID_ALREADY_EXISTS(HttpStatus.CONFLICT,"","이미 해당 아이디가 존재합니다."),
     NOT_FOUND_ID(HttpStatus.BAD_REQUEST,"", "해당 아이디가 존재하지 않습니다."),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "","이미 로그아웃 되었습니다. 로그인이 필요합니다."),
+    UNAUTHORIZED_ID(HttpStatus.UNAUTHORIZED,"","권한이 없습니다. 관리자만 접근이 가능합니다."),
 
     //User
     USER_ID_ERROR(HttpStatus.UNAUTHORIZED,"","아이디나 비밀번호가 올바르지 않습니다."),

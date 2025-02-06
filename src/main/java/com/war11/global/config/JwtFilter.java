@@ -12,7 +12,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +20,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.List;
 
 /*
 SpringSecurity 사용을 위해 OncePerRequestFilter를 extend 함.
@@ -32,12 +34,24 @@ public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
     private final RequestMatcher whitList = new AntPathRequestMatcher("/auth/**");
+    private final List<String> swaggerWhitelist = List.of(
+            "/swagger-ui",
+            "/swagger-ui/",
+            "/swagger-ui/index.html",
+            "/swagger-ui.html",
+            "/v3/api-docs",
+            "/v3/api-docs/",
+            "/v3/api-docs/swagger-config"
+    );
 
     @Override
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
 
+        String url = request.getRequestURI();
+        log.info("Request URI: {}", url);
+
         //AntPathRequestMatcher를 사용하여 url에 대한 프리픽스를 만듦, auth가 아닌 것만 체크
-        if(whitList.matches(request)) {
+        if(whitList.matches(request) || swaggerWhitelist.stream().anyMatch(url::startsWith)) {
             chain.doFilter(request, response);
             return;
         }
@@ -47,7 +61,7 @@ public class JwtFilter extends OncePerRequestFilter {
         /*
         빈 문자열일 때나 null일 때를 검사하기 위해 isBlank 사용
          */
-        if(bearerJwt.isBlank()) {
+        if( bearerJwt == null || bearerJwt.isBlank()) {
             throw new BusinessException(ErrorCode.NOT_FOUND_TOKEN);
         }
 
@@ -89,7 +103,7 @@ public class JwtFilter extends OncePerRequestFilter {
     //postman에서 확인할 수 있게 json 형태로 출력하는 메서드
     private void sendError (HttpServletResponse response,int errorCode, String msg) throws IOException {
         response.setStatus(errorCode);
-        response.setContentType("appliction/json");
+        response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write(msg);
         response.getWriter().flush();
