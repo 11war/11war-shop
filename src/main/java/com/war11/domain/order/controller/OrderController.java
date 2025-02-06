@@ -1,6 +1,7 @@
 package com.war11.domain.order.controller;
 
 import com.war11.domain.order.dto.request.ChangeOrderStatusRequest;
+import com.war11.domain.order.dto.request.OrderRequest;
 import com.war11.domain.order.dto.response.CancelOrderResponse;
 import com.war11.domain.order.dto.response.GetAllOrdersResponse;
 import com.war11.domain.order.dto.response.OrderResponse;
@@ -32,9 +33,10 @@ public class OrderController {
 
   @PostMapping
   public ResponseEntity<ApiResponse<OrderResponse>> createOrderApi(
-      @AuthenticationPrincipal CustomUserDetails userDetails) {
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @RequestBody OrderRequest request) {
     Long userId = userDetails.getId();
-    Long discountPrice = 30000L;
+    Long discountPrice = request.discountPrice();
     OrderResponse response = orderService.createOrder(userId, discountPrice);
 
     return ApiResponse.success(response);
