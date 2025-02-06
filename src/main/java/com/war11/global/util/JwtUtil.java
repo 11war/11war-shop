@@ -61,6 +61,7 @@ public class JwtUtil {
                 .setId(String.valueOf(user.getId()))
                 .claim("loginId", user.getLoginId()) //토큰에 상세한 값 추가
                 .claim("name", user.getName())
+                .claim("role", user.getRole())  // 역할 추가
                 .setExpiration(
                     new Date(date.getTime() + TOKEN_TIME)) //토큰 만료 시간을 발급시간으로부터 상수 TOKEN_TIME으로 결정
                 .setIssuedAt(date) // 발급시간
