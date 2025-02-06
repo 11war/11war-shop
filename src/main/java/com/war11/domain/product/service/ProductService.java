@@ -40,8 +40,8 @@ public class ProductService {
   private final RedisTemplate<String,String> redisTemplate;
   private final LockService<Keyword> lockService;
 
-  public ProductResponse createProduct(ProductRequest productRequest, String username) {
-    checkAdmin(username);
+  public ProductResponse createProduct(ProductRequest productRequest, String loginId) {
+    checkAdmin(loginId);
 
     Product resultProduct = productRepository.save(productRequest.toEntity(productRequest));
     return resultProduct.toDto(resultProduct);
@@ -49,8 +49,8 @@ public class ProductService {
   }
 
   @Transactional
-  public ProductResponse updateProduct(ProductUpdateRequest productUpdateRequest, String username) {
-    checkAdmin(username);
+  public ProductResponse updateProduct(ProductUpdateRequest productUpdateRequest, String loginId) {
+    checkAdmin(loginId);
 
     findByIdOrThrow(productUpdateRequest.id());
     Product resultProduct = productRepository.findByIdForUpdate(productUpdateRequest.id());
@@ -59,8 +59,8 @@ public class ProductService {
   }
 
   @Transactional
-  public void deleteProduct(Long productId, String username) {
-    checkAdmin(username);
+  public void deleteProduct(Long productId, String loginId) {
+    checkAdmin(loginId);
 
     findByIdOrThrow(productId);
     Product resultProduct = productRepository.findByIdForUpdate(productId);
@@ -120,8 +120,8 @@ public class ProductService {
   }
 
   //Create,Update,Delete 모두 권한 검사가 핅요하므로, 중복코드 방지를 위해 통합.
-  public void checkAdmin(String  username){
-    if(!username.equals("ADMIN")){
+  public void checkAdmin(String  loginId){
+    if(!loginId.equals("ADMIN")){
       throw new BusinessException(ErrorCode.UMATHORIZED_ADMIN);
     }
   }

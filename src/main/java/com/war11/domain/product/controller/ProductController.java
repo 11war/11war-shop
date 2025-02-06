@@ -40,7 +40,7 @@ public class ProductController {
       @AuthenticationPrincipal CustomUserDetails userDetails) {
 
     ProductResponse productResponse = productService.createProduct(productRequest,
-        userDetails.getUsername());
+        userDetails.getLoginId());
 
     return ApiResponse.created(productResponse);
   }
@@ -50,7 +50,7 @@ public class ProductController {
       @Valid @RequestBody ProductUpdateRequest productUpdateRequest,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
     ProductResponse productResponse = productService.updateProduct(productUpdateRequest,
-        userDetails.getUsername());
+        userDetails.getLoginId());
 
     return ApiResponse.success(productResponse);
   }
@@ -58,7 +58,7 @@ public class ProductController {
   @DeleteMapping("/{productId}")
   public ResponseEntity<ApiResponse<String>> deleteProduct(@PathVariable Long productId,
       @AuthenticationPrincipal CustomUserDetails userDetails) {
-    productService.deleteProduct(productId, userDetails.getUsername());
+    productService.deleteProduct(productId, userDetails.getLoginId());
     return ApiResponse.success("삭제되었습니다.");
   }
 
