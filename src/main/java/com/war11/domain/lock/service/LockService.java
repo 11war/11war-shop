@@ -11,14 +11,13 @@ public class LockService<T> {
 
   public void lock(String key) {
     int retryCount = 0;
-    Random random = new Random();
     while (!lockRepository.lock(key)) {
       if (retryCount >= WAIT_TIME) {
         throw new RuntimeException(lockRepository.getClass().getSimpleName() + "락 획득 시간 초과");
       }
       retryCount++;
       try {
-        Thread.sleep(500+ random.nextInt(500) - 250);
+        Thread.sleep(100 + new Random().nextInt(100));
       } catch (InterruptedException e) {
         throw new RuntimeException(lockRepository.getClass().getSimpleName() + "락 획득 중 오류 발생", e);
       }

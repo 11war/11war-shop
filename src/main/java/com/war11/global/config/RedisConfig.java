@@ -32,7 +32,7 @@ public class RedisConfig {
     redisStandaloneConfiguration.setDatabase(database);
 
     LettuceConnectionFactory connectionFactory = new LettuceConnectionFactory(redisStandaloneConfiguration);
-    connectionFactory.setShareNativeConnection(false);  // 각 연결을 분리하여 관리
+    connectionFactory.setShareNativeConnection(false);
     return connectionFactory;
   }
 
@@ -40,11 +40,7 @@ public class RedisConfig {
   public RedisTemplate<String, Object> redisTemplate() {
     RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
     redisTemplate.setConnectionFactory(redisConnectionFactory());
-
-    // String 타입의 key를 위한 직렬화 설정
     redisTemplate.setKeySerializer(new StringRedisSerializer());
-
-    // Object 타입의 value를 위한 직렬화 설정
     redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
 
     return redisTemplate;
@@ -55,8 +51,12 @@ public class RedisConfig {
     Config config = new Config();
     config.useSingleServer()
         .setAddress("redis://" + host + ":" + port)
-        .setDatabase(database);
-
+        .setDatabase(database)
+        .setConnectionMinimumIdleSize(10)
+        .setConnectionPoolSize(64)
+        .setConnectTimeout(3000)
+        .setRetryAttempts(3)
+        .setRetryInterval(1500);
     return Redisson.create(config);
   }
 }
