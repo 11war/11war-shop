@@ -1,5 +1,6 @@
 package com.war11.domain.product.service;
 
+import com.war11.domain.lock.service.LockService;
 import com.war11.domain.product.dto.request.ProductAutoCompletingRequest;
 import com.war11.domain.product.dto.request.ProductFindRequest;
 import com.war11.domain.product.dto.request.ProductRequest;
@@ -12,6 +13,7 @@ import com.war11.domain.product.repository.KeywordRepository;
 import com.war11.domain.product.repository.ProductRepository;
 import com.war11.global.exception.BusinessException;
 import com.war11.global.exception.enums.ErrorCode;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,10 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -29,9 +34,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ProductService {
 
+  private static final String KEYWORD_PREFIX = "keyword";
   private final ProductRepository productRepository;
   private final KeywordRepository keywordRepository;
   private final RedisTemplate<String,String> redisTemplate;
+  private final LockService<Keyword> lockService;
 
   public ProductResponse createProduct(ProductRequest productRequest, String username) {
     checkAdmin(username);
@@ -73,11 +80,17 @@ public class ProductService {
 
   @Transactional
   public Page<ProductResponse> findByProductName(ProductFindRequest productFindRequest,Pageable pageable) {
+    String lockKey = productFindRequest.name();
 
+    lockService.lock(lockKey);
 
-    ZSetOperations<String,String> zSetOperations = redisTemplate.opsForZSet();
-    zSetOperations.incrementScore("keyword",productFindRequest.name(),1);
+    ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
+    if(!valueOperations.setIfAbsent(KEYWORD_PREFIX+productFindRequest.name(),"1", Duration.ofMillis(3000))){
+      Long count = Long.valueOf(valueOperations.get(KEYWORD_PREFIX + productFindRequest.name()));
+      valueOperations.set(KEYWORD_PREFIX+productFindRequest.name(),Long.toString(count+1), Duration.ofMillis(3000));
+    };
 
+    lockService.unlock(lockKey);
     return productRepository.findByProductName(productFindRequest, pageable);
   }
 
@@ -91,18 +104,19 @@ public class ProductService {
 
   @Scheduled(fixedRate = 300000)
   public void saveAllCacheToDB() {
-    LocalDateTime cacheSaveTime = LocalDateTime.now();
-    ZSetOperations<String,String> zSetOperations = redisTemplate.opsForZSet();
-    Set<ZSetOperations.TypedTuple<String>> keywordZSetOperations = zSetOperations.rangeWithScores("keyword",0,-1);
     List<Keyword> keywordList = new ArrayList<>();
-    keywordZSetOperations.stream().forEach(
-        keyword -> {
-          keywordList.add(new Keyword(keyword.getValue(),keyword.getScore().longValue(), cacheSaveTime));
-        }
-    );
-
+    LocalDateTime cacheSaveTime = LocalDateTime.now();
+    ScanOptions scanOptions = ScanOptions.scanOptions().match(KEYWORD_PREFIX+"*").count(10).build();
+    Cursor<String> scan = redisTemplate.scan(scanOptions);
+    ValueOperations<String,String> valueOperations = redisTemplate.opsForValue();
+    while(scan.hasNext()) {
+      String keyword = scan.next();
+      String count = valueOperations.get(keyword);
+      redisTemplate.delete(keyword);
+      keywordList.add(new Keyword(keyword.substring(7),Long.parseLong(count), cacheSaveTime));
+    }
     keywordRepository.saveAll(keywordList);
-    redisTemplate.delete("keyword");
+
   }
 
   //Create,Update,Delete 모두 권한 검사가 핅요하므로, 중복코드 방지를 위해 통합.

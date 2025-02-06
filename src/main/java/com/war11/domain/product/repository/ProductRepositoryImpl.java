@@ -21,11 +21,38 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
 
   private final JPAQueryFactory jpaQueryFactory;
 
-  BooleanBuilder builder =  new BooleanBuilder();
+
 
   @Override
   public Page<ProductResponse> findByProductName(ProductFindRequest productFindRequest,
       Pageable pageable) {
+
+    BooleanBuilder builder =  new BooleanBuilder();
+
+    if(productFindRequest.name()!=null){
+      builder.and(product.name.like(productFindRequest.name()+"%"));
+    }
+
+    if(productFindRequest.category()!=null){
+      builder.and(product.category.like(productFindRequest.category()));
+    }
+
+    if(productFindRequest.minPrice()!=null){
+      builder.and(product.price.goe(productFindRequest.minPrice()));
+    }
+
+    if(productFindRequest.maxPrice()!=null){
+      builder.and(product.price.loe(productFindRequest.maxPrice()));
+    }
+
+    if(productFindRequest.minQuantity()!=null){
+      builder.and(product.quantity.goe(productFindRequest.minQuantity()));
+    }
+
+    if(productFindRequest.maxQuantity()!=null){
+      builder.and(product.quantity.loe(productFindRequest.maxQuantity()));
+    }
+
     List<ProductResponse> response = jpaQueryFactory
         .select(Projections.constructor(
             ProductResponse.class,
@@ -66,29 +93,7 @@ long total = Optional.ofNullable(jpaQueryFactory
     .fetchOne()).orElse(0L);
 
 
-    if(productFindRequest.name()!=null){
-      builder.and(product.name.like(productFindRequest.name()+"%"));
-    }
 
-    if(productFindRequest.category()!=null){
-      builder.and(product.category.like(productFindRequest.category()+"%"));
-    }
-
-    if(productFindRequest.minPrice()!=null){
-      builder.and(product.price.goe(productFindRequest.minPrice()));
-    }
-
-    if(productFindRequest.maxPrice()!=null){
-      builder.and(product.price.loe(productFindRequest.maxPrice()));
-    }
-
-    if(productFindRequest.minQuantity()!=null){
-      builder.and(product.quantity.goe(productFindRequest.minQuantity()));
-    }
-
-    if(productFindRequest.maxQuantity()!=null){
-      builder.and(product.quantity.loe(productFindRequest.maxQuantity()));
-    }
 
     return new PageImpl<>(response,pageable,total);
   }
