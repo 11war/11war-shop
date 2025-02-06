@@ -27,6 +27,14 @@ public class CartService {
   private final CartProductRepository cartProductRepository;
   private final UserRepository userRepository;
 
+
+  /**
+   * 장바구니에 상품 추가(장바구니 없을 경우 장바구니 생성하고 추가) <br>
+   * 1. {@code request}와 {@code userId},{@code productId}를 전달받는다. <br>
+   * 2. {@code userId}로 카트 검색. 없으면 카트를 만들고, 있으면 카트 불러온다. <br>
+   * 3. {@code productId}로 상품 찾고, 상품과 카트 이용해서 {@code cartProduct} 만들고 저장.<br>
+   * ref. 반환값이 없어서 request에서 toDto메서드 사용.
+   */
   public void addToCart(AddCartProductRequest request, Long userId, Long productId) {
     Cart foundCart = cartRepository.findCartByUserId(userId)
         .orElseGet(() -> {
@@ -40,6 +48,13 @@ public class CartService {
     cartProductRepository.save(cartProduct);
   }
 
+  /**
+   * 장바구니 조회 <br>
+   * 1. {@code userId}값 받기. <br>
+   * 2. {@code userId}로 카트 조회. <br>
+   * 3. 조회한 카트 아이디로 장바구니 상품 전체 조회, stream으로 dto에 매핑한다.
+   * 4. {@code cartId}, {@code foundCartProducts}리스트로 {@code GetCarResponse}생성 후 반환
+   */
   public GetCartResponse getCart(Long userId) {
     Cart foundCart = cartRepository.findCartByUserId(userId).orElseThrow();
 
