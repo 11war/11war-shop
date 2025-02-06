@@ -1,12 +1,16 @@
 package com.war11.domain.order.service;
 
-import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.war11.domain.cart.entity.Cart;
 import com.war11.domain.cart.entity.CartProduct;
 import com.war11.domain.cart.repository.CartProductRepository;
 import com.war11.domain.cart.repository.CartRepository;
+import com.war11.domain.order.dto.request.OrderRequest;
 import com.war11.domain.order.dto.response.GetAllOrdersResponse;
 import com.war11.domain.order.dto.response.OrderResponse;
 import com.war11.domain.order.entity.Order;
@@ -101,12 +105,13 @@ class OrderServiceTest {
 
     when(orderProductRepository.saveAll(any()))
         .thenReturn(List.of(orderProduct1, orderProduct2));
+    OrderRequest request = new OrderRequest(3000L);
+
 
     // when
-    OrderResponse response = orderService.createOrder(101L, 1000L);
+    OrderResponse response = orderService.createOrder(101L, request);
 
     // then: 반환값인 response 내부 값 검증, 메서드 호출 검증, 재고 감소 확인
-    assertThat(response.user()).isEqualTo(user);
     assertThat(response.orderProducts()).hasSize(2);
     assertThat(response.resultPrice()).isEqualTo(5000L * 2 + 3000L - 1000L);
     assertThat(response.orderStatus()).isNotNull();
