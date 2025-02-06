@@ -39,3 +39,10 @@ logging:
     org:
       springframework:
         security=DEBUG:
+
+
+data:
+  redis:
+    password: ${redis.password}
+    host: ${redis.host}
+    port: ${redis.port}

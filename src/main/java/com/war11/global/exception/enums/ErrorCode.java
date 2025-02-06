@@ -27,7 +27,8 @@ public enum ErrorCode {
 
     //Product
     NOT_FOUND_PRODUCT_ID(HttpStatus.NOT_FOUND,"","찾는 상품이 없습니다."),
-    INVALID_PRODUCT_STATUS_VALUE(HttpStatus.BAD_REQUEST,"" ,"해당하는 상태코드가 없습니다." );
+    NOT_FOUND_KEYWORD_ID(HttpStatus.BAD_REQUEST,"" ,"해당하는 키워드가 없습니다." ),
+    UMATHORIZED_ADMIN(HttpStatus.UNAUTHORIZED,"","관리자권한이 없습니다.");
 
     //Cart
 
