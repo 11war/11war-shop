@@ -14,13 +14,14 @@ public class LockRepository<T> {
   }
 
   public Boolean lock(String key) {
-    return redisTemplate
-        .opsForValue()
-        .setIfAbsent(LOCK_PREFIX + getDomainPrefix() + key, domain.getSimpleName(), Duration.ofSeconds(3));
+    String lockKey = LOCK_PREFIX + getDomainPrefix() + key;
+    return redisTemplate.opsForValue()
+        .setIfAbsent(lockKey, domain.getSimpleName(), Duration.ofSeconds(3));
   }
 
   public Boolean unlock(String key) {
-    return redisTemplate.delete(LOCK_PREFIX + getDomainPrefix() + key);
+    String lockKey = LOCK_PREFIX + getDomainPrefix() + key;
+    return redisTemplate.delete(lockKey);
   }
 
   private String getDomainPrefix() {

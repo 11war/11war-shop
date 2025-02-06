@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
@@ -42,7 +43,7 @@ public class CouponService {
   private static final String USER_KEY_PREFIX = "coupon:users:";
   private static final String LOCK_KEY_PREFIX = "coupon:lock:";
   private static final long WAIT_TIME = 3L;
-  private static final long LEASE_TIME = 5L; // 락 임대 시간
+  private static final long AVAILABLE_TIME = 5L; // 락 임대 시간
 
   @PostConstruct
   public void initializeCouponCount() {
@@ -102,51 +103,45 @@ public class CouponService {
     return couponRepository.save(coupon).toDto();
   }
 
-  @Transactional
   public CouponResponse issueCouponWithLargeScale(Long couponTemplateId, Long userId) {
-    RLock lock = redissonClient.getLock(LOCK_KEY_PREFIX + couponTemplateId);
-    CouponTemplate couponTemplate = findCouponTemplateById(couponTemplateId);
+    RLock lock = redissonClient.getLock(LOCK_KEY_PREFIX + couponTemplateId + ":" + userId);
     User user = userRepository.findById(userId).orElseThrow();
-    validateCouponDuplicate(couponTemplateId, userId);
     try {
-      boolean isLocked = lock.tryLock(WAIT_TIME, LEASE_TIME, TimeUnit.SECONDS);
-
+      boolean isLocked = lock.tryLock(WAIT_TIME, AVAILABLE_TIME, TimeUnit.SECONDS);
       if (!isLocked) {
         throw new RuntimeException("쿠폰 발급 대기 시간 초과");
       }
-
-      try {
-        String countKey = COUNT_KEY_PREFIX + couponTemplateId;
-        Long remainingCount = redisTemplate.opsForValue().decrement(countKey);
-
-        if (remainingCount < 0) {// 수량이 부족한 경우 롤백
-          redisTemplate.opsForValue().increment(countKey);
-          throw new RuntimeException("모든 쿠폰 수량 소진");
-        }
-        Coupon coupon = couponTemplate.issueCoupon(user);
-        return couponRepository.save(coupon).toDto();
-
-      } finally {
-        if (lock.isLocked() && lock.isHeldByCurrentThread()) {
-          lock.unlock();
-        }
+      validateCouponDuplicate(couponTemplateId, userId);
+      CouponTemplate couponTemplate = findCouponTemplateById(couponTemplateId);
+      String countKey = COUNT_KEY_PREFIX + couponTemplateId;
+      Long remainingCount = redisTemplate.opsForValue().decrement(countKey);
+      if (remainingCount < 0) {// 수량이 부족한 경우 롤백
+        redisTemplate.opsForValue().increment(countKey);
+        throw new RuntimeException("모든 쿠폰 수량 소진");
       }
+      Coupon coupon = couponTemplate.issueCoupon(user);
+      couponTemplateRepository.save(couponTemplate);
+      return couponRepository.save(coupon).toDto();
+
     } catch (InterruptedException e) {
       throw new RuntimeException("쿠폰 발급 오류가 발생", e);
+    }finally {
+      if (lock.isLocked() && lock.isHeldByCurrentThread()) {
+        lock.unlock();
+      }
     }
   }
 
-  @Transactional
+  @Transactional(isolation = Isolation.SERIALIZABLE)
   public CouponResponse issueCouponWithLettuce(Long couponTemplateId, Long userId) {
-    String lockKey = String.valueOf(couponTemplateId);
-    CouponTemplate couponTemplate = findCouponTemplateById(couponTemplateId);
+    String lockKey = couponTemplateId + ":" + userId;
     User user = userRepository.findById(userId).orElseThrow();
-    validateCouponDuplicate(couponTemplateId, userId);
-
+    String countKey = COUNT_KEY_PREFIX + couponTemplateId;
     try {
       lockService.lock(lockKey);
 
-      String countKey = COUNT_KEY_PREFIX + couponTemplateId;
+      CouponTemplate couponTemplate = couponTemplateRepository.findByIdWithLock(couponTemplateId).orElseThrow();
+      validateCouponDuplicate(couponTemplateId, userId);
       Long remainingCount = redisTemplate.opsForValue().decrement(countKey);
 
       if (remainingCount < 0) {
