@@ -43,6 +43,8 @@ public class CartProduct {
 
   public CartProductResponse toDto() {
     return CartProductResponse.builder()
+        .cartId(cart.getId())
+        .productId(product.getId())
         .productName(product.getName())
         .productPrice(product.getPrice())
         .productQuantity(quantity)

@@ -12,14 +12,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AddCartProductRequest {
   Integer quantity;
-  boolean isChecked;
 
   public CartProduct toEntity (Cart cart, Product product) {
     return CartProduct.builder()
         .cart(cart)
         .product(product)
         .quantity(quantity)
-        .isChecked(isChecked)
+        .isChecked(true)
         .build();
   }
 }

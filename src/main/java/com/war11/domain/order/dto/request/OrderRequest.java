@@ -1,4 +1,9 @@
 package com.war11.domain.order.dto.request;
 
-public class OrderRequest {
+import com.war11.domain.coupon.entity.Coupon;
+
+public record OrderRequest(
+    Coupon coupon
+) {
+
 }
