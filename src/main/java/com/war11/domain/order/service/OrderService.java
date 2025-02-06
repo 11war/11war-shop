@@ -7,22 +7,28 @@ import com.war11.domain.cart.repository.CartRepository;
 import com.war11.domain.coupon.annotation.Lock;
 import com.war11.domain.order.dto.request.ChangeOrderStatusRequest;
 import com.war11.domain.order.dto.response.CancelOrderResponse;
-import com.war11.domain.order.dto.response.UpdateOrderResponse;
 import com.war11.domain.order.dto.response.GetAllOrdersResponse;
 import com.war11.domain.order.dto.response.OrderProductResponse;
 import com.war11.domain.order.dto.response.OrderResponse;
+import com.war11.domain.order.dto.response.UpdateOrderResponse;
 import com.war11.domain.order.entity.Order;
 import com.war11.domain.order.entity.OrderProduct;
+import com.war11.domain.order.entity.enums.OrderStatus;
 import com.war11.domain.order.repository.OrderProductRepository;
 import com.war11.domain.order.repository.OrderRepository;
 import com.war11.domain.product.entity.Product;
 import com.war11.domain.product.repository.ProductRepository;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
+import com.war11.global.exception.BusinessException;
+import com.war11.global.exception.base.InvalidRequestException;
+import com.war11.global.exception.base.NotFoundException;
+import com.war11.global.exception.enums.ErrorCode;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -53,13 +59,17 @@ public class OrderService {
   @Lock
   @Transactional
   public OrderResponse createOrder(Long userId, Long discountPrice) {
-    User foundUser = userRepository.findById(userId).orElseThrow();
-    Cart foundCart = cartRepository.findCartByUserId(userId).orElseThrow();
+    User foundUser = findEntity(userRepository, userId, ErrorCode.USER_NOT_FOUND);
+    Cart foundCart = cartRepository.findCartByUserId(userId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.CART_IS_EMPTY));
 
     List<CartProduct> cartProducts = cartProductRepository.findCartProductByCartIdAndIsChecked(
         foundCart.getId(), true);
 
     cartProducts.forEach(cartProduct -> {
+      if (cartProduct.getProduct().getQuantity() < cartProduct.getQuantity()) {
+        throw new InvalidRequestException(ErrorCode.INSUFFICIENT_STOCK);
+      }
       cartProduct.getProduct().downToQuantity(cartProduct.getQuantity());
     });
 
@@ -70,13 +80,19 @@ public class OrderService {
             cartProduct.getProduct().getName(), cartProduct.getProduct().getPrice(),
             cartProduct.getQuantity())).toList();
 
-    orderProductRepository.saveAll(orderProducts);
 
+    order.updateOrderDetails(discountPrice, orderProducts);
+    if (order.getDiscountedPrice() > order.getTotalPrice()) {
+      log.warn("할인가격({})가 총 가격({})보다 커서 조정됨", discountPrice, order.getTotalPrice());
+
+      discountPrice = order.getTotalPrice();
+      order.updateOrderDetails(discountPrice, orderProducts);
+    }
+    orderRepository.save(order);
+    orderProductRepository.saveAll(orderProducts);
     List<OrderProductResponse> orderProductResponses = orderProducts.stream()
         .map(OrderProduct::toDto).toList();
 
-    order.updateOrderDetails(discountPrice, orderProducts);
-    orderRepository.save(order);
     OrderResponse response = order.toDto(orderProductResponses);
 
     cartProductRepository.deleteAll(cartProducts);
@@ -114,7 +130,7 @@ public class OrderService {
   }
 
   public OrderResponse getOrder(Long orderId) {
-    Order order = orderRepository.findById(orderId).orElseThrow();
+    Order order = findEntity(orderRepository, orderId, ErrorCode.ORDER_NOT_FOUND);
     List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(orderId);
 
     List<OrderProductResponse> orderProductResponses = orderProducts.stream()
@@ -126,7 +142,7 @@ public class OrderService {
 
   @Transactional
   public UpdateOrderResponse updateOrder(Long orderId, ChangeOrderStatusRequest request) {
-    Order order = orderRepository.findById(orderId).orElseThrow();
+    Order order = findEntity(orderRepository, orderId, ErrorCode.ORDER_NOT_FOUND);
     order.updateOrderStatus(request.orderStatus());
 
     return new UpdateOrderResponse(orderId,"배송 상태가 변경되었습니다.", order.getStatus());
@@ -141,15 +157,33 @@ public class OrderService {
   @Lock
   @Transactional
   public CancelOrderResponse cancelOrder(Long orderId) {
-    Order order = orderRepository.findById(orderId).orElseThrow();
-    order.cancelThisOrder();
+    Order order = findEntity(orderRepository, orderId, ErrorCode.ORDER_NOT_FOUND);
+    if (order.getStatus() == OrderStatus.CANCELLED) {
+      throw new InvalidRequestException(ErrorCode.ALREADY_CANCELED);
+    }
+    if (order.getStatus() != OrderStatus.PAID) {
+      throw new InvalidRequestException(ErrorCode.CANNOT_CANCEL_ORDER);
+    }
 
     List<OrderProduct> orderProducts = orderProductRepository.findByOrderId(orderId);
     orderProducts.forEach(orderProduct -> {
-      Product foundProduct = productRepository.findById(orderProduct.getProductId()).orElseThrow();
+      Product foundProduct = findEntity(productRepository, orderProduct.getId(), ErrorCode.PRODUCT_NOT_FOUND);
       foundProduct.upToQuantity(orderProduct.getQuantity());
     });
 
+    order.cancelThisOrder();
+
     return new CancelOrderResponse(orderId,"주문이 취소되었습니다.", order.getStatus());
+  }
+
+  /**
+   * 제네릭타입 find 메서드 <br>
+   * 타입 별로 {@code repository}, {@code id}, {@code errorCode}대입받음. <br>
+   * 각 레포지토리에서 {@code id}기준으로 탐색, 없을 시 예외 발생. <br>
+   */
+  private <T> T findEntity(JpaRepository<T, Long> repository, Long id, ErrorCode errorCode) {
+    return repository.findById(id).orElseThrow(
+        () -> new NotFoundException(errorCode)
+    );
   }
 }
