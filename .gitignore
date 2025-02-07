@@ -8,13 +8,11 @@ gradle/wrapper/gradle-wrapper.jar
 /gradle.*
 .gitattributes
 .gradle
-gradlew
-gradlew.*
-*.gradle
-
+/build
 ### setting ###
 myInfo.yml
 *.properties
+application-test.yml
 
 ### STS ###
 .apt_generated

@@ -7,7 +7,42 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
+  data:
+    redis:
+      port: ${redis.port}
+      host: ${redis.host}
+      database: ${redis.database}
+
+# jwt 토큰 사용을 위한 비밀키
+jwt:
+  secret:
+    key: ${jwt.key}
+  
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    groups-order: DESC
+    operationsSorter: method
+    disable-swagger-default-url: true
+    display-request-duration: true
+  api-docs:
+    path: /api-docs
+  show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+logging:
+  level:
+    org:
+      springframework:
+        security=DEBUG:
+
+
+data:
+  redis:
+    password: ${redis.password}
+    host: ${redis.host}
+    port: ${redis.port}

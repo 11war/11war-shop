@@ -1,6 +1,0 @@
-db:
-  name: war11
-  user: war11
-  pw: war11
-  url: localhost
-  port: 3306
