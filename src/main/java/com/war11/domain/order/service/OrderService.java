@@ -5,6 +5,7 @@ import com.war11.domain.cart.entity.CartProduct;
 import com.war11.domain.cart.repository.CartProductRepository;
 import com.war11.domain.cart.repository.CartRepository;
 import com.war11.domain.coupon.annotation.Lock;
+import com.war11.domain.coupon.repository.CouponRepository;
 import com.war11.domain.lock.service.LockService;
 import com.war11.domain.order.dto.request.ChangeOrderStatusRequest;
 import com.war11.domain.order.dto.request.OrderRequest;
@@ -45,6 +46,7 @@ public class OrderService {
   private final OrderProductRepository orderProductRepository;
   private final ProductRepository productRepository;
   private final LockService lockService;
+  private final CouponRepository couponRepository;
   private final EntityManager em;
 
   /**
@@ -63,7 +65,7 @@ public class OrderService {
   @Transactional
   public OrderResponse createOrder(Long userId, OrderRequest request) {
     User foundUser = findEntity(userRepository, userId, ErrorCode.USER_NOT_FOUND);
-    Integer discountPrice = request.coupon().getCouponTemplate().getValue();
+    Long discountPrice = request.discountPrice();
     //주문 생성
     Order order = orderRepository.save(new Order(foundUser));
 
@@ -73,7 +75,7 @@ public class OrderService {
 
       List<CartProduct> cartProducts = cartProductRepository.findCartProductByCartIdAndIsChecked(
           foundCart.getId(), true);
-      em.flush();
+
       List<OrderProduct> orderProducts = cartProducts.stream()
           .map(cartProduct -> dcereateProductQuantityAndCreateOrderProduct(cartProduct, order))
           .toList();
@@ -82,7 +84,7 @@ public class OrderService {
       if (order.getDiscountedPrice() > order.getTotalPrice()) {
         log.warn("할인가격({})가 총 가격({})보다 커서 조정됨", discountPrice, order.getTotalPrice());
 
-        discountPrice = (order.getTotalPrice().intValue());
+        discountPrice = order.getTotalPrice();
         order.updateOrderDetails(discountPrice, orderProducts);
       }
 

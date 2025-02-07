@@ -11,7 +11,7 @@ public record OrderResponse (
     Long orderId,
     List<OrderProductResponse> orderProducts,
     Long totalPrice,
-    Integer discountedPrice,
+    Long discountedPrice,
     Long resultPrice,
     OrderStatus orderStatus,
     LocalDateTime createdAt,
