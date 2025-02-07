@@ -5,6 +5,7 @@ import com.war11.domain.cart.entity.CartProduct;
 import com.war11.domain.cart.repository.CartProductRepository;
 import com.war11.domain.cart.repository.CartRepository;
 import com.war11.domain.coupon.annotation.Lock;
+import com.war11.domain.coupon.entity.CouponTemplate;
 import com.war11.domain.lock.service.LockService;
 import com.war11.domain.order.dto.request.ChangeOrderStatusRequest;
 import com.war11.domain.order.dto.request.OrderRequest;
@@ -44,7 +45,7 @@ public class OrderService {
   private final OrderRepository orderRepository;
   private final OrderProductRepository orderProductRepository;
   private final ProductRepository productRepository;
-  private final LockService lockService;
+  private final LockService<CouponTemplate> lockService;
   private final EntityManager em;
 
   /**
@@ -110,7 +111,7 @@ public class OrderService {
     if (product.getQuantity() < cartProduct.getQuantity()) {
       throw new InvalidRequestException(ErrorCode.INSUFFICIENT_STOCK);
     }
-    product.downToQuantity(cartProduct.getQuantity());
+    product.decreaseQuantity(cartProduct.getQuantity());
 
     return new OrderProduct(order, product.getId(), product.getName(), product.getPrice(),
         cartProduct.getQuantity());
@@ -177,7 +178,7 @@ public class OrderService {
     orderProducts.forEach(orderProduct -> {
       Product foundProduct = findEntity(productRepository, orderProduct.getId(),
           ErrorCode.PRODUCT_NOT_FOUND);
-      foundProduct.upToQuantity(orderProduct.getQuantity());
+      foundProduct.increaseQuantity(orderProduct.getQuantity());
     });
 
     order.cancelThisOrder();
