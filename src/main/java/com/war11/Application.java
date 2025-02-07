@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @OpenAPIDefinition(
-		info = @Info(title = "API 문서", version = "1.0", description = "Swagger API 문서 예제")
+		info = @Info(title = "11.WAR API", version = "1.0", description = "11.WAR API")
 )
 @SpringBootApplication
 @EnableScheduling

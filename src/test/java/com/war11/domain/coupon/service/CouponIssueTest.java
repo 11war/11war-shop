@@ -7,6 +7,7 @@ import com.war11.domain.coupon.repository.CouponRepository;
 import com.war11.domain.coupon.repository.CouponTemplateRepository;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
+import com.war11.global.exception.base.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +108,7 @@ public class CouponIssueTest {
           try{
             couponService.issueCoupon(couponTemplateId,userId);
             successCount.incrementAndGet();
-          } catch (IllegalStateException e) {
+          } catch (AccessDeniedException e) {
             failCount.incrementAndGet();
           } finally {
             latch.countDown();

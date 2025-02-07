@@ -1,5 +1,7 @@
 package com.war11.global.util;
 
+import com.war11.global.exception.base.ConflictException;
+import com.war11.global.exception.enums.ErrorCode;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +25,7 @@ public class LockAspect {
     ReentrantLock reentrantLock = lockMap.computeIfAbsent(key, k -> new ReentrantLock());
     try {
       if (!reentrantLock.tryLock(3, TimeUnit.SECONDS)) {
-        throw new RuntimeException("쿠폰 발급 대기 시간 초과");
+        throw new ConflictException(ErrorCode.TIME_OUT_LOCK);
       }
       try {
         return joinPoint.proceed();
@@ -31,7 +33,7 @@ public class LockAspect {
         reentrantLock.unlock();
       }
     } catch (InterruptedException e) {
-      throw new RuntimeException("쿠폰 발급 오류 발생", e);
+      throw new ConflictException((ErrorCode.DENIED_GET_LOCK) );
     }
   }
 }
