@@ -7,7 +7,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -39,3 +39,10 @@ logging:
     org:
       springframework:
         security=DEBUG:
+
+
+data:
+  redis:
+    password: ${redis.password}
+    host: ${redis.host}
+    port: ${redis.port}

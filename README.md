@@ -32,7 +32,6 @@
 - **AWS RDS**
 - **Redis**
 - **Git Actions**
-- **Swagger**
 
 ## 배포  
 - **배포 환경**: [배포 환경의 이름 또는 링크]  
@@ -50,7 +49,7 @@
     [김창현-TIL+트러블슈팅](https://velog.io/@kch223/TILEp-61.-동시성-제어-프로젝트)<br>
     [방동혁-TIL+트러블슈팅](https://www.naver.com)<br>
     [정영균-TIL+트러블슈팅](https://www.naver.com)<br>
-    [진주양-TIL+트러블슈팅](https://www.naver.com)<br>
+    [진주양-TIL+트러블슈팅](https://velog.io/@wndid2008/TIL-PLUS-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-2)<br>
 - ### 5분 기록 보드
     [5분 기록 보드](https://www.notion.so/teamsparta/5-17b2dc3ef51481f89c43d6274795c5ef)
 - ### ERD

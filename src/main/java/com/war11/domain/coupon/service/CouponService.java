@@ -14,6 +14,10 @@ import com.war11.domain.order.entity.Order;
 import com.war11.domain.order.repository.OrderRepository;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
+import com.war11.global.exception.base.AccessDeniedException;
+import com.war11.global.exception.base.InvalidRequestException;
+import com.war11.global.exception.base.NotFoundException;
+import com.war11.global.exception.enums.ErrorCode;
 import jakarta.annotation.PostConstruct;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -21,12 +25,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -80,6 +83,7 @@ public class CouponService {
     return findCouponTemplateById(id).toDto();
   }
 
+  @Transactional
   public void editCouponTemplate(Long id, CouponTemplateUpdateRequest updateRequest) {
     CouponTemplate couponTemplate = findCouponTemplateById(id);
     couponTemplate.updateCouponTemplate(updateRequest);
@@ -90,14 +94,14 @@ public class CouponService {
     try{
       couponTemplateRepository.deleteById(id);
     } catch (NoSuchElementException e) {
-      throw new NoSuchElementException("템플릿이 없음.");
+      throw new NotFoundException(ErrorCode.COUPON_TEMPLATE_NOT_FOUND);
     }
   }
 
   @Lock
   public CouponResponse issueCoupon(Long couponTemplateId,Long userId) {
     CouponTemplate couponTemplate = findCouponTemplateById(couponTemplateId);
-    User user = userRepository.findById(userId).orElseThrow();
+    User user = userRepository.findById(userId).orElseThrow(()-> new NotFoundException(ErrorCode.USER_NOT_FOUND));
     validateCouponDuplicate(couponTemplateId, userId);
     Coupon coupon = couponTemplate.issueCoupon(user);
     return couponRepository.save(coupon).toDto();
@@ -105,11 +109,11 @@ public class CouponService {
 
   public CouponResponse issueCouponWithLargeScale(Long couponTemplateId, Long userId) {
     RLock lock = redissonClient.getLock(LOCK_KEY_PREFIX + couponTemplateId + ":" + userId);
-    User user = userRepository.findById(userId).orElseThrow();
+    User user = userRepository.findById(userId).orElseThrow(()-> new NotFoundException(ErrorCode.USER_NOT_FOUND));
     try {
       boolean isLocked = lock.tryLock(WAIT_TIME, AVAILABLE_TIME, TimeUnit.SECONDS);
       if (!isLocked) {
-        throw new RuntimeException("쿠폰 발급 대기 시간 초과");
+        throw new AccessDeniedException(ErrorCode.TIME_OUT_COUPON_ISSUE);
       }
       validateCouponDuplicate(couponTemplateId, userId);
       CouponTemplate couponTemplate = findCouponTemplateById(couponTemplateId);
@@ -117,14 +121,14 @@ public class CouponService {
       Long remainingCount = redisTemplate.opsForValue().decrement(countKey);
       if (remainingCount < 0) {// 수량이 부족한 경우 롤백
         redisTemplate.opsForValue().increment(countKey);
-        throw new RuntimeException("모든 쿠폰 수량 소진");
+        throw new InvalidRequestException(ErrorCode.COUPON_SOLD_OUT);
       }
       Coupon coupon = couponTemplate.issueCoupon(user);
       couponTemplateRepository.save(couponTemplate);
       return couponRepository.save(coupon).toDto();
 
     } catch (InterruptedException e) {
-      throw new RuntimeException("쿠폰 발급 오류가 발생", e);
+      throw new AccessDeniedException(ErrorCode.COUPON_ISSUE_DENIED);
     }finally {
       if (lock.isLocked() && lock.isHeldByCurrentThread()) {
         lock.unlock();
@@ -132,24 +136,24 @@ public class CouponService {
     }
   }
 
-  @Transactional(isolation = Isolation.SERIALIZABLE)
   public CouponResponse issueCouponWithLettuce(Long couponTemplateId, Long userId) {
     String lockKey = couponTemplateId + ":" + userId;
-    User user = userRepository.findById(userId).orElseThrow();
+    User user = userRepository.findById(userId).orElseThrow(()-> new NotFoundException(ErrorCode.USER_NOT_FOUND));
     String countKey = COUNT_KEY_PREFIX + couponTemplateId;
     try {
       lockService.lock(lockKey);
 
-      CouponTemplate couponTemplate = couponTemplateRepository.findByIdWithLock(couponTemplateId).orElseThrow();
+      CouponTemplate couponTemplate = couponTemplateRepository.findById(couponTemplateId).orElseThrow(()-> new NotFoundException(ErrorCode.COUPON_TEMPLATE_NOT_FOUND));
       validateCouponDuplicate(couponTemplateId, userId);
       Long remainingCount = redisTemplate.opsForValue().decrement(countKey);
 
       if (remainingCount < 0) {
         redisTemplate.opsForValue().increment(countKey);
-        throw new RuntimeException("모든 쿠폰 수량 소진");
+        throw new AccessDeniedException(ErrorCode.COUPON_SOLD_OUT);
       }
 
       Coupon coupon = couponTemplate.issueCoupon(user);
+      couponTemplateRepository.save(couponTemplate);
       return couponRepository.save(coupon).toDto();
 
     } finally {
@@ -161,14 +165,14 @@ public class CouponService {
     boolean couponInfo = couponRepository.existsByCouponTemplateIdAndUserId(couponTemplateId,
         userId);
     if(couponInfo) {
-      throw new IllegalStateException("이미 발급된 쿠폰입니다.");
+      throw new AccessDeniedException(ErrorCode.ALREADY_ISSUED);
     }
   }
 
   @Transactional
   public void useCoupon(Long couponId, Long orderId) {
     Coupon coupon = findCouponById(couponId);
-    Order order = orderRepository.findById(orderId).orElseThrow();
+    Order order = orderRepository.findById(orderId).orElseThrow(()-> new NotFoundException(ErrorCode.ORDER_NOT_FOUND));
     coupon.useCoupon(order);
   }
 
@@ -179,14 +183,14 @@ public class CouponService {
   }
 
   public CouponResponse findUserCoupon(Long couponId, Long userId) {
-    return couponRepository.findByIdAndUserId(couponId,userId).orElseThrow().toDto();
+    return couponRepository.findByIdAndUserId(couponId,userId).orElseThrow(() -> new NotFoundException(ErrorCode.COUPON_NOT_FOUND)).toDto();
   }
 
   private CouponTemplate findCouponTemplateById(Long id) {
-    return couponTemplateRepository.findById(id).orElseThrow();
+    return couponTemplateRepository.findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.COUPON_TEMPLATE_NOT_FOUND));
   }
 
   private Coupon findCouponById(Long id) {
-    return couponRepository.findById(id).orElseThrow();
+    return couponRepository.findById(id).orElseThrow(() -> new NotFoundException(ErrorCode.COUPON_NOT_FOUND));
   }
 }
