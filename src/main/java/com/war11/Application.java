@@ -6,7 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @OpenAPIDefinition(
-		info = @Info(title = "API 문서", version = "1.0", description = "Swagger API 문서 예제")
+		info = @Info(title = "11.WAR API", version = "1.0", description = "11.WAR API")
 )
 @SpringBootApplication
 public class Application {

@@ -22,6 +22,7 @@ import com.war11.domain.order.entity.Order;
 import com.war11.domain.order.repository.OrderRepository;
 import com.war11.domain.user.entity.User;
 import com.war11.domain.user.repository.UserRepository;
+import com.war11.global.exception.base.NotFoundException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -177,24 +178,6 @@ class CouponServiceTest {
       void 쿠폰_수정_성공() {
         // given
         Long templateId1 = 1L;
-        List<CouponTemplate> couponTemplates = Arrays.asList(
-            CouponTemplate.builder()
-                .name("9시 쿠폰")
-                .value(1000)
-                .quantity(100)
-                .status(CouponStatus.AVAILABLE)
-                .startDate(LocalDateTime.now())
-                .endDate(LocalDateTime.now().plusDays(1))
-                .build(),
-            CouponTemplate.builder()
-                .name("신규가입 쿠폰")
-                .value(5000)
-                .quantity(200)
-                .status(CouponStatus.AVAILABLE)
-                .startDate(LocalDateTime.now())
-                .endDate(LocalDateTime.now().plusDays(7))
-                .build()
-        );
         CouponTemplateUpdateRequest updateRequest = new CouponTemplateUpdateRequest(
             "수정된 9시 쿠폰",
             2000,
@@ -250,7 +233,7 @@ class CouponServiceTest {
         when(couponTemplateRepository.findById(invalidCouponTemplateId))
             .thenReturn(Optional.empty());
         // when
-        assertThrows(NoSuchElementException.class,
+        assertThrows(NotFoundException.class,
             () -> couponService.editCouponTemplate(invalidCouponTemplateId, updateRequest));
         // then
         verify(couponTemplateRepository, times(1)).findById(invalidCouponTemplateId);
@@ -285,7 +268,7 @@ class CouponServiceTest {
             .when(couponTemplateRepository)
             .deleteById(invalidCouponTemplateId);
         // when
-        assertThrows(NoSuchElementException.class,
+        assertThrows(NotFoundException.class,
             () -> couponService.removeCouponTemplate(invalidCouponTemplateId));
         // then
         verify(couponTemplateRepository, times(1)).deleteById(invalidCouponTemplateId);
@@ -400,7 +383,7 @@ class CouponServiceTest {
         long userId = 2L;
         when(couponRepository.findByIdAndUserId(couponId,userId)).thenReturn(Optional.empty());
         // when
-        assertThrows(NoSuchElementException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
               couponService.findUserCoupon(couponId, userId);
         });
         // then
