@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -62,10 +63,12 @@ public class JwtFilter extends OncePerRequestFilter {
         빈 문자열일 때나 null일 때를 검사하기 위해 isBlank 사용
          */
         if( bearerJwt == null || bearerJwt.isBlank()) {
+            log.warn("JWT 토큰 없음");
             throw new BusinessException(ErrorCode.NOT_FOUND_TOKEN);
         }
 
         if (JwtUtil.EXPIRED_TOKEN_SET.contains(bearerJwt)) {
+            log.warn("로그아웃된 JWT 토큰");
             sendError(response,HttpServletResponse.SC_FORBIDDEN,"이미 로그아웃 되었습니다.");
             return;
         }
@@ -80,10 +83,27 @@ public class JwtFilter extends OncePerRequestFilter {
             스프링 시큐리티에서 기본으로 사용자를 찾는 기준인 username 대신 loginId를 기준으로 찾기 위해 CustomUserDetailsService 설정
              */
             String loginId = claims.get("loginId", String.class);
+            String role = claims.get("role", String.class);  // role 정보 가져오기
+
+            // "ROLE_"이 중복으로 붙는 경우 방지
+            if (!role.startsWith("ROLE_")) {
+                role = "ROLE_" + role;
+            }
+
+
+            if (loginId == null || role == null) {
+                log.error("JWT에 필수 정보 없음 (loginId={}, role={})", loginId, role);
+                sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "JWT에 필요한 정보가 없습니다.");
+                return;
+            }
             CustomUserDetails userDetails = (CustomUserDetails) userDetailsService.loadUserByUsername(loginId);
 
             //인증된 사용자 정보와 비밀번호(jwt에서는 사용안하므로 null), 사용자 권한정보를 매개변수로 하여 객체 생성
-            Authentication authToken = new UsernamePasswordAuthenticationToken(userDetails,null, userDetails.getAuthorities());
+            Authentication authToken = new UsernamePasswordAuthenticationToken(
+                userDetails, null, List.of(new SimpleGrantedAuthority(role))
+            );
+
+            log.info("현재 사용자 권한: {}", userDetails.getAuthorities());
 
             //인증된 사용자 정보를 저장
             SecurityContextHolder.getContext().setAuthentication(authToken);

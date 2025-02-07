@@ -21,7 +21,7 @@ spring:
 jwt:
   secret:
     key: ${jwt.key}
-
+  
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

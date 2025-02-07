@@ -7,4 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CartProductRepository extends JpaRepository<CartProduct, Long> {
 
   List<CartProduct> findCartProductByCartId(Long cartId);
+
+  boolean existsByCartId(Long cartId);
+
+  List<CartProduct> findCartProductByCartIdAndIsChecked(Long cartId, Boolean isChecked);
 }
