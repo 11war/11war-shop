@@ -32,7 +32,6 @@
 - **AWS RDS**
 - **Redis**
 - **Git Actions**
-- **Swagger**
 
 ## 배포  
 - **배포 환경**: [배포 환경의 이름 또는 링크]  
