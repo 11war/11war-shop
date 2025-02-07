@@ -14,12 +14,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.Comment;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -29,6 +31,7 @@ import java.util.List;
 SpringSecurity 사용을 위해 OncePerRequestFilter를 extend 함.
  */
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -36,13 +39,13 @@ public class JwtFilter extends OncePerRequestFilter {
     private final CustomUserDetailsService userDetailsService;
     private final RequestMatcher whitList = new AntPathRequestMatcher("/auth/**");
     private final List<String> swaggerWhitelist = List.of(
-            "/swagger-ui",
-            "/swagger-ui/",
-            "/swagger-ui/index.html",
-            "/swagger-ui.html",
-            "/v3/api-docs",
-            "/v3/api-docs/",
-            "/v3/api-docs/swagger-config"
+        "/swagger-ui/**",  // 모든 swagger-ui 하위 경로 포함
+        "/swagger-ui",
+        "/swagger-ui/index.html",
+        "/swagger-ui.html",
+        "/v3/api-docs",
+        "/v3/api-docs/",
+        "/v3/api-docs/swagger-config"
     );
 
     @Override

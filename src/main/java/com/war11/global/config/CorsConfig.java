@@ -28,6 +28,8 @@ public class CorsConfig {
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization")); // JWT 토큰 허용
         source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/swagger-ui/**", config);
+        source.registerCorsConfiguration("/v3/api-docs/**", config);
         return new CorsFilter(source);
     }
 }

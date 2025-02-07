@@ -4,6 +4,7 @@ spring:
     username: ${db.user}
     password: ${db.pw}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -11,6 +12,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+    open-in-view: false
   data:
     redis:
       port: ${redis.port}
@@ -21,7 +23,7 @@ spring:
 jwt:
   secret:
     key: ${jwt.key}
-  
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -39,3 +41,7 @@ logging:
     org:
       springframework:
         security=DEBUG:
+      io:
+        swagger: DEBUG  # Swagger 요청/응답 로깅
+
+

@@ -24,10 +24,13 @@ import static com.war11.global.util.JwtUtil.EXPIRED_TOKEN_SET;
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
+    private final JwtFilter jwtFilter; // JwtFilter를 주입받습니다.
     private final CustomUserDetailsService userDetailsService;
 
-    public SecurityConfig(JwtUtil jwtUtil, CustomUserDetailsService userDetailsService) {
+
+    public SecurityConfig(JwtUtil jwtUtil, JwtFilter jwtFilter, CustomUserDetailsService userDetailsService) {
         this.jwtUtil = jwtUtil;
+        this.jwtFilter = jwtFilter;
         this.userDetailsService = userDetailsService;
     }
 
@@ -40,35 +43,31 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
-
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
-        // JWT는 Stateless로 사용되기 때문에 csrf 공격에 대한 보호가 필요치 않다. 따라서 해당 기능을 비활성화한다.
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        // 기본 보안 설정
         http
-                .csrf((csrf) -> csrf.disable())
-                .cors(cors -> cors.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues()));
+            .formLogin(form -> form.disable())
+            .httpBasic(basic -> basic.disable())
+            .csrf(csrf -> csrf.disable());
 
-
-        /*
-        Jwt 토큰을 이용한 로그인을 할 것이므로 폼 로그인 기능 비활성화
-        httpBasic 또한 Authorization에 아이디와 비밀번호를 base64로 인코딩해서 가져오는 기능으로 보안에 취약하다.
-        하지만 이 프로젝트는 Authorization에 jwt 토큰 값을 가져와서 사용할 것이므로 비활성화한다.
-        */
-
+        // 🔹 인증 및 권한 설정
         http
-            .formLogin((form) -> form.disable())
-            .httpBasic((basic) -> basic.disable());
+            .authorizeHttpRequests(auth -> auth
+                // 🔹 Swagger & API 문서 접근 허용
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
-        http
-            .authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/", "/auth/signup", "/auth/signin", "/logout",
-                    "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // 화이트리스트
-                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")  // 관리자 전용 (수정)
-                .anyRequest().hasAnyAuthority("ROLE_USER", "ROLE_ADMIN") // 일반 접근 (수정)
+                // 🔹 로그인 & 회원가입 API는 인증 없이 접근 가능
+                .requestMatchers("/auth/signup", "/auth/signin", "/logout").permitAll()
+
+                // 🔹 관리자 전용 (ROLE_ADMIN 필요)
+                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+
+                // 🔹 나머지 요청은 USER 또는 ADMIN 권한 필요
+                .anyRequest().hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
             );
 
-
+        // 🔹 JWT 로그아웃 처리
         http
             .logout(logout -> logout
                 .logoutUrl("/logout")
@@ -101,13 +100,13 @@ public class SecurityConfig {
                 })
             );
 
-
+        // 🔹 JWT 필터 추가
         http
-            .addFilterAt(new JwtFilter(jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // 세션 관리를 할 때 JWT 토큰 사용 시에는 Stateless 로 설정해야 하기 때문에 해당 부분 작성
+        // 🔹 세션 설정: JWT 사용 시 STATELESS 모드 유지
         http
-            .sessionManagement((session) -> session
+            .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
