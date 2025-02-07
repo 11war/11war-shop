@@ -25,12 +25,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -137,7 +136,6 @@ public class CouponService {
     }
   }
 
-  @Transactional(isolation = Isolation.SERIALIZABLE)
   public CouponResponse issueCouponWithLettuce(Long couponTemplateId, Long userId) {
     String lockKey = couponTemplateId + ":" + userId;
     User user = userRepository.findById(userId).orElseThrow(()-> new NotFoundException(ErrorCode.USER_NOT_FOUND));
@@ -145,7 +143,7 @@ public class CouponService {
     try {
       lockService.lock(lockKey);
 
-      CouponTemplate couponTemplate = couponTemplateRepository.findByIdWithLock(couponTemplateId).orElseThrow(()-> new NotFoundException(ErrorCode.COUPON_TEMPLATE_NOT_FOUND));
+      CouponTemplate couponTemplate = couponTemplateRepository.findById(couponTemplateId).orElseThrow(()-> new NotFoundException(ErrorCode.COUPON_TEMPLATE_NOT_FOUND));
       validateCouponDuplicate(couponTemplateId, userId);
       Long remainingCount = redisTemplate.opsForValue().decrement(countKey);
 
@@ -155,6 +153,7 @@ public class CouponService {
       }
 
       Coupon coupon = couponTemplate.issueCoupon(user);
+      couponTemplateRepository.save(couponTemplate);
       return couponRepository.save(coupon).toDto();
 
     } finally {
