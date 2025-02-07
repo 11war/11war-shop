@@ -4,7 +4,6 @@ import static com.war11.domain.product.entity.QProduct.product;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.war11.domain.product.dto.request.ProductFindRequest;
 import com.war11.domain.product.dto.response.ProductResponse;

@@ -17,7 +17,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +24,6 @@ import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,7 +120,7 @@ public class ProductService {
   //Create,Update,Delete 모두 권한 검사가 핅요하므로, 중복코드 방지를 위해 통합.
   public void checkAdmin(String  loginId){
     if(!loginId.equals("ADMIN")){
-      throw new BusinessException(ErrorCode.UMATHORIZED_ADMIN);
+      throw new BusinessException(ErrorCode.UNAUTHORIZED_ID);
     }
   }
 }
